@@ -1,0 +1,250 @@
+.login-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Left Panel Styling */
+.brand-panel {
+  background: #4470ea; /* Base blue from image */
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* This creates the glowing heart effect */
+.brand-panel {
+  background: #1d4ed8; /* Base blue from image */
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* This creates the glowing heart effect */
+.brand-panel::before {
+  content: "";
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(
+    circle at center, 
+    rgba(122, 211, 255, 0.442) 20%, 
+    rgba(255, 255, 255, 0.05) 40%, 
+    transparent 70%
+  );
+  /* The heart shape is created by masking a circle */
+  mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 60%; /* Adjust size of heart here */
+  opacity: 0.6;
+  
+}
+/* Ensure the tagline has appropriate spacing and font weight */
+
+
+
+.brand-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.panel-logo-icon { width: 84px;
+    height: 80px;
+    border-radius: 20px;
+
+}
+
+.panel-title {
+  font-size: 42px;
+  font-weight: 800;
+  /*margin-bottom: 16px;*/
+  margin: 0;
+  color: #ffffff;
+  margin-left: 54px;
+  
+}
+
+.panel-tagline {
+  font-size: 18px;
+  line-height: 1.5;
+  opacity: 0.9;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9); /* Slightly soft white for better readability */
+  max-width: 400px;               /* Keeps text from stretching too wide */
+  margin-top: 16px;
+  text-align: center;
+}
+
+.panel-footer {
+  position: absolute;
+  bottom: 30px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* Right Panel Styling */
+.form-panel {
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.form-logo {
+  height: 60px;
+  /*margin-bottom: 24px;*/
+}
+
+.form-header h2 {
+  font-size: 28px;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.form-header p {
+  color: #64748b;
+}
+
+/* Input Styles */
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.input-group input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  margin-left: 12px;
+  font-size: 16px;
+  outline: none;
+}
+
+.send-otp-btn {
+  width: 100%;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+  margin-bottom: 20px;
+}
+
+.send-otp-btn.disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.terms-checkbox a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.divider {
+  margin: 30px 0;
+  text-align: center;
+  position: relative;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.divider span {
+  background: white;
+  padding: 0 15px;
+  color: #94a3b8;
+  font-size: 12px;
+  position: relative;
+}
+
+.guest-action {
+  text-align: center;
+}
+
+.guest-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+}
+
+.limited-tag {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Responsive for Mobile */
+@media (max-width: 900px) {
+  .login-container {
+    grid-template-columns: 1fr;
+  }
+  .brand-panel {
+    display: none; /* Hide branding on mobile as per typical mobile login patterns */
+  }
+}

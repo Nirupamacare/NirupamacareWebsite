@@ -4,6 +4,8 @@ import LanguageSelect from "./components/LanguageSelect";
 import Splashscreen from "./components/Splashscreen";
 import Intro from "./components/Intro";
 import HelpCenter from "./components/internalcomponents/HelpCenter";
+import Login from "./components/Login";
+import Otp from "./components/Otp";
 import "./App.css";
 
 const SplashWrapper = () => {
@@ -23,6 +25,8 @@ function App() {
             <Route path="/language-select" element={<LanguageSelect />} />
             <Route path="/intro" element={<Intro />} />
             <Route path="/help" element={<HelpCenter />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/verify-otp" element={<Otp />} />
           </Routes>
         </main>
 
