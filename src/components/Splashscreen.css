@@ -1,0 +1,116 @@
+.splash-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, #fcfdfe 0%, #f0f4f8 100%); /* Subtle radial glow */
+  font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+.splash-content {
+  text-align: center;
+  width: 90%;
+  max-width: 500px;
+}
+
+/* Logo Section */
+.logo-wrapper {
+  margin-bottom: 40px;
+}
+
+.brand-logo {
+  width: 100px; /* Adjust based on your image aspect ratio */
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.brand-name {
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+/* Tagline */
+.tagline-container {
+  margin-bottom: 60px;
+}
+
+.tagline-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 1.5px;
+  margin: 4px 0;
+}
+
+.highlight {
+  color: #0ea5e9; /* Matches the AI highlight blue */
+}
+
+/* Progress Bar Styles */
+.loader-section {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.loader-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0ea5e9;
+}
+
+.spin-icon {
+  display: inline-block;
+  animation: spin 2s linear infinite;
+  margin-right: 5px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+  border-radius: 10px;
+  transition: width 0.3s ease-out;
+}
+
+/* Footer */
+.splash-footer {
+  position: absolute;
+  bottom: 30px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Desktop Adaptation */
+@media (min-width: 1024px) {
+  .brand-name {
+    font-size: 56px;
+  }
+  .tagline-text {
+    font-size: 18px;
+  }
+}
