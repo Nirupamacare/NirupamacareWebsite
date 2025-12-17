@@ -8,11 +8,16 @@
 
 /* Navbar */
 .intro-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 80px;
+  padding: 20px 80px; /* Large padding for Desktop */
   background: white;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
 }
 
 .nav-logo {

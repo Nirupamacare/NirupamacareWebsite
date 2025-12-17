@@ -7,7 +7,6 @@ const Intro = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
 
-
   const onboardingData = [
     {
       title: "Tell us your symptoms. We understand Bengali & English.",
