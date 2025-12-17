@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
 import './Otp.css';
 
 const Otp = () => {
@@ -106,12 +106,12 @@ const Otp = () => {
           </button>
 
           <p className="trouble-text">
-            Having trouble? <a href="/help">Contact Support</a>
+            Having trouble? <Link to="/help">Contact Support</Link>
           </p>
           
           <div className="otp-bottom-links">
             <span>© 2025 Nirupama Care</span>
-            <a href="/privacy">Privacy Policy</a>
+            <Link to="/privacy">Privacy Policy</Link>
           </div>
         </div>
       </div>

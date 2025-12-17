@@ -33,8 +33,7 @@ const Intro = () => {
     if (currentStep < onboardingData.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Navigate to Login/Signup
-      window.location.href = "/login"; 
+      navigate("/login"); 
     }
   };
 
