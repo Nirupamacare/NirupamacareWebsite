@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
 import './Splashscreen.css';
 
 const Splashscreen = ({ onLoadingComplete }) => {
   const [progress, setProgress] = useState(0);
+  const navigate = useNavigate(); // 2. Initialize the hook
 
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((oldProgress) => {
         if (oldProgress === 100) {
           clearInterval(timer);
-          setTimeout(onLoadingComplete, 500); // Small delay after 100%
+          
+          // 3. Navigate after the small 500ms delay
+          setTimeout(() => {
+            if (onLoadingComplete) onLoadingComplete(); // Call prop if provided (optional)
+            navigate('/language-select');
+          }, 500);
+          
           return 100;
         }
         const diff = Math.random() * 10;
@@ -18,7 +26,7 @@ const Splashscreen = ({ onLoadingComplete }) => {
     }, 200);
 
     return () => clearInterval(timer);
-  }, [onLoadingComplete]);
+  }, [navigate, onLoadingComplete]);
 
   return (
     <div className="splash-container">
@@ -26,7 +34,7 @@ const Splashscreen = ({ onLoadingComplete }) => {
         {/* Logo and Branding */}
         <div className="logo-wrapper">
           <img 
-            src="/logo-icon.png" 
+            src="/logo-lightblue1.png" 
             alt="Nirupama Care Logo" 
             className="brand-logo" 
           />

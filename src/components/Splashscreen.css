@@ -5,7 +5,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle, #ffffff 0%, #ffffff 100%); /* Subtle radial glow */
+  background: radial-gradient(circle, #e0f7fa 0%, #80deea 100%); /* Subtle radial glow */
   font-family: 'Inter', -apple-system, sans-serif;
   overflow: hidden;
   position: relative;
