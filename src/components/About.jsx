@@ -1,21 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './About.css';
 import { Heart, Shield, Activity, Search, Calendar, Smile, ShieldCheck, Lock, Headphones } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const About = () => {
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     // WRAPPER ID to isolate styles
     <div id="about-page-root">
       
-      {/* --- Navbar --- */}
-      <nav className="about-nav">
+      {/* --- Navbar (Scoped Classes) --- */}
+      <nav className="about-navbar">
         <div className="about-nav-container">
-          <div className="about-logo">
+          <div className="about-logo" onClick={() => navigate('/')}>
              <img src="nirupama1.png" className="about-logo-img" alt="Logo" />   
           </div>
-          <ul className="about-nav-links">
+          
+          <div className="about-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <div className={isMenuOpen ? "about-bar open" : "about-bar"}></div>
+            <div className={isMenuOpen ? "about-bar open" : "about-bar"}></div>
+            <div className={isMenuOpen ? "about-bar open" : "about-bar"}></div>
+          </div>
+
+          <ul className={isMenuOpen ? "about-nav-links active" : "about-nav-links"}>
             <li><a href="/home">Home</a></li>
-            <li><a href="/about" className="about-active">About Us</a></li>
+            <li><a href="/about" className="about-active-link">About Us</a></li>
             <li><a href="/doctors">Find Doctors</a></li>
             <li><a href="/help">Help</a></li>
           </ul>
@@ -78,7 +89,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* --- NEW SECTION: Our Standards (Replaces Mission) --- */}
+      {/* --- Standards Section --- */}
       <section className="about-section bg-white">
         <div className="about-container">
             <div className="section-header">
@@ -148,6 +159,10 @@ const About = () => {
         </div>
       </section>
 
+      {/* --- Footer --- */}
+      <footer className="about-footer">
+        <p>© 2025 Nirupama Health. All rights reserved.</p>
+      </footer>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import Home from "./components/Home";
 import UserProfileSetup from "./components/Userprofilesetup";
 import Login from "./components/Login";
 import About from "./components/About";
+import Security from "./components/Security";
 import Otp from "./components/Otp";
 import "./App.css";
 
@@ -31,6 +32,7 @@ function App() {
             <Route path="/help" element={<HelpCenter />} />
              <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/security" element={<Security />} />
             <Route path="/userprofilesetup" element={<UserProfileSetup />} />
             <Route path="/verify-otp" element={<Otp />} />
           </Routes>
