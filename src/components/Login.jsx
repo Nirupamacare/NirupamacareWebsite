@@ -22,32 +22,24 @@ const AuthPage = () => {
     e.preventDefault();
     
     if (isLogin) {
-      // --- LOGIN LOGIC ---
       console.log('Login logic:', { 
         identifier: formData.identifier, 
         password: formData.password 
       });
 
-      // 1. Simulate a successful backend response
-      // In a real app, this comes from Supabase/API
+      // 1. Simulate Token
       const fakeToken = "user_token_12345"; 
-
-      // 2. Save token to localStorage
-      // This is what Home.jsx checks to see if you are a "user"
       localStorage.setItem('token', fakeToken);
 
-      // 3. Navigate to Home Page
+      // 2. Navigate to Home
       navigate('/home'); 
 
     } else {
-      // --- SIGNUP LOGIC ---
       if (formData.password !== formData.confirmPassword) {
         alert("Passwords do not match!");
         return;
       }
       console.log('Signup logic:', formData);
-      
-      // On Signup, we usually send them to profile setup
       navigate('/userprofilesetup');
     }
   };
@@ -63,22 +55,24 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="login-wrapper">
-      {/* --- Navbar Section --- */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="logo">
-             <img src="nirupama1.png" className="logo-icon-img" alt="Logo" />   
+    // UNIQUE ID WRAPPER FOR ISOLATION
+    <div id="auth-page-root">
+      
+      {/* --- Navbar Section (Scoped) --- */}
+      <nav className="auth-navbar">
+        <div className="auth-nav-container">
+          <div className="auth-logo">
+             <img src="nirupama1.png" className="auth-logo-icon" alt="Logo" />   
           </div>
           
-          <div className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
+          <div className="auth-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <div className={isMenuOpen ? "auth-bar open" : "auth-bar"}></div>
+            <div className={isMenuOpen ? "auth-bar open" : "auth-bar"}></div>
+            <div className={isMenuOpen ? "auth-bar open" : "auth-bar"}></div>
           </div>
 
-          <ul className={isMenuOpen ? "nav-links active" : "nav-links"}>
-            <li><a href="/">Home</a></li>
+          <ul className={isMenuOpen ? "auth-nav-links active" : "auth-nav-links"}>
+            <li><a href="/home">Home</a></li>
             <li><a href="/about">About Us</a></li>
             <li><a href="/doctors">Find Doctors</a></li>
             <li><a href="/help">Help</a></li>
@@ -87,11 +81,11 @@ const AuthPage = () => {
       </nav>
 
       {/* --- Auth Form Section --- */}
-      <div className="login-container">
-        <div className="login-card">
-          <div className="login-header">
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
             <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-            <p className="sub-text">
+            <p className="auth-sub-text">
               {isLogin 
                 ? 'Please login to access your health dashboard' 
                 : 'Join us to manage your health journey'}
@@ -100,7 +94,7 @@ const AuthPage = () => {
 
           <form onSubmit={handleSubmit}>
             {!isLogin && (
-              <div className="input-group fade-in">
+              <div className="auth-input-group fade-in">
                 <label htmlFor="fullName">Full Name</label>
                 <input
                   type="text"
@@ -114,7 +108,7 @@ const AuthPage = () => {
               </div>
             )}
 
-            <div className="input-group">
+            <div className="auth-input-group">
               <label htmlFor="identifier">Mobile Number or Email</label>
               <input
                 type="text"
@@ -127,7 +121,7 @@ const AuthPage = () => {
               />
             </div>
 
-            <div className="input-group">
+            <div className="auth-input-group">
               <label htmlFor="password">Password</label>
               <input
                 type="password"
@@ -141,7 +135,7 @@ const AuthPage = () => {
             </div>
 
             {!isLogin && (
-              <div className="input-group fade-in">
+              <div className="auth-input-group fade-in">
                 <label htmlFor="confirmPassword">Confirm Password</label>
                 <input
                   type="password"
@@ -156,35 +150,35 @@ const AuthPage = () => {
             )}
 
             {isLogin && (
-              <div className="form-actions">
-                <div className="remember-me">
+              <div className="auth-actions">
+                <div className="auth-remember">
                   <input type="checkbox" id="remember" />
                   <label htmlFor="remember">Remember me</label>
                 </div>
-                <a href="/forgot-password" className="forgot-pass">Forgot Password?</a>
+                <a href="/forgot-password" className="auth-forgot">Forgot Password?</a>
               </div>
             )}
 
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="auth-btn-primary">
               {isLogin ? 'Login' : 'Register'}
             </button>
 
             {isLogin && (
               <>
-                <div className="divider">
+                <div className="auth-divider">
                   <span>OR</span>
                 </div>
-                <button type="button" className="btn-secondary">
+                <button type="button" className="auth-btn-secondary">
                   Login with OTP
                 </button>
               </>
             )}
           </form>
 
-          <div className="login-footer">
+          <div className="auth-footer">
             <p>
               {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <span onClick={toggleAuthMode} className="toggle-link">
+              <span onClick={toggleAuthMode} className="auth-toggle-link">
                 {isLogin ? 'Register Now' : 'Login Here'}
               </span>
             </p>

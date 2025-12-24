@@ -14,7 +14,7 @@ const About = () => {
              <img src="nirupama1.png" className="about-logo-img" alt="Logo" />   
           </div>
           <ul className="about-nav-links">
-            <li><a href="/">Home</a></li>
+            <li><a href="/home">Home</a></li>
             <li><a href="/about" className="about-active">About Us</a></li>
             <li><a href="/doctors">Find Doctors</a></li>
             <li><a href="/help">Help</a></li>
@@ -148,10 +148,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* --- Footer --- */}
-      <footer className="about-footer">
-        <p>© 2025 Nirupama Health. All rights reserved.</p>
-      </footer>
     </div>
   );
 };

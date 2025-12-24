@@ -11,35 +11,24 @@ const Home = () => {
   const [suggestion, setSuggestion] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // --- NEW: Auth State ---
+  // --- Auth State ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Simple hook to trigger animations on load & Check Login
   const [loaded, setLoaded] = useState(false);
   
   useEffect(() => {
     setLoaded(true);
-
-    // --- NEW: Check if user is logged in ---
-    // We check if a 'token' exists in localStorage (or check your Supabase session)
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
     }
   }, []);
 
-  // --- Logic to analyze symptoms ---
   const handleAnalyzeSymptoms = () => {
-    // 1. SECURITY CHECK: Redirect if not logged in
     if (!isLoggedIn) {
-      // Optional: Save what they typed so it's there when they come back?
-      // localStorage.setItem('temp_symptom', symptomDesc); 
       alert("You need to login to use the AI Symptom Checker.");
       navigate('/login');
       return;
     }
-
-    // 2. Validate Input
     if (!symptomDesc.trim()) {
         alert("Please describe your symptoms.");
         return;
@@ -48,13 +37,11 @@ const Home = () => {
     setIsAnalyzing(true);
     setSuggestion(null);
 
-    // Simulate a delay for "Analysis"
     setTimeout(() => {
       const text = symptomDesc.toLowerCase();
       let doctorType = "General Physician";
       let reason = "For a general checkup and initial diagnosis.";
 
-      // Simple Keyword Matching Logic
       if (text.includes('tooth') || text.includes('gum') || text.includes('jaw')) {
         doctorType = "Dentist";
         reason = "It sounds like a dental issue.";
@@ -74,7 +61,7 @@ const Home = () => {
 
       setSuggestion({ type: doctorType, message: reason });
       setIsAnalyzing(false);
-    }, 1500); // 1.5 second delay
+    }, 1500);
   };
 
   const handleLogout = () => {
@@ -84,43 +71,43 @@ const Home = () => {
   };
 
   return (
-    <div className="home-wrapper">
-      {/* --- Navbar --- */}
-      <nav className="navbar">
-        <div className="navbar-container">
-          <div className="nav-left">
-            <div className="logo" onClick={() => navigate('/')}>
-              <img src="nirupama1.png" alt="" className='nirupama-logo'/>
+    // STRICT ISOLATION WRAPPER
+    <div id="home-page-root">
+      
+      {/* --- Navbar (Scoped Classes) --- */}
+      <nav className="home-navbar">
+        <div className="home-nav-container">
+          <div className="home-nav-left">
+            <div className="home-logo" onClick={() => navigate('/')}>
+              <img src="nirupama1.png" alt="" className='home-logo-img'/>
             </div>
-            <ul className="primary-nav desktop-only">
+            <ul className="home-primary-nav desktop-only">
               <li><a href="/doctors" className="active-link">Get Doctor</a></li>
               <li><a href="/video-consult">Video Consult</a></li>
               <li><a href="/lab-tests">Book Lab Test</a></li>
             </ul>
           </div>
 
-          <div className="nav-right desktop-only">
+          <div className="home-nav-right desktop-only">
             <a href="/for-doctors" className="nav-link-secondary">For doctors</a>
             <a href="/security" className="nav-link-secondary">Security</a>
             <a href="/help" className="nav-link-secondary">Help</a>
             
-            
-            {/* Conditional Rendering for Login/Logout */}
             {isLoggedIn ? (
-                <button className="btn-login" onClick={handleLogout}>
+                <button className="home-btn-login" onClick={handleLogout}>
                   Logout
                 </button>
             ) : (
-                <button className="btn-login" onClick={() => navigate('/login')}>
+                <button className="home-btn-login" onClick={() => navigate('/login')}>
                   Login / Signup
                 </button>
             )}
           </div>
 
-          <div className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
+          <div className="home-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <div className={isMenuOpen ? "home-bar open" : "home-bar"}></div>
+            <div className={isMenuOpen ? "home-bar open" : "home-bar"}></div>
+            <div className={isMenuOpen ? "home-bar open" : "home-bar"}></div>
           </div>
         </div>
       </nav>
@@ -143,7 +130,7 @@ const Home = () => {
                 </div>
                 <div className="search-input main-search">
                   <span className="icon">🔍</span>
-                  <input type="text" placeholder="Search doctors, clinics, hospitals..." />
+                  <input type="text" placeholder="Search doctors..." />
                 </div>
                 <button className="btn-search">Search</button>
               </div>
@@ -175,7 +162,7 @@ const Home = () => {
         </div>
       </header>
 
-      {/* --- NEW SECTION: SYMPTOM CHECKER --- */}
+      {/* --- SYMPTOM CHECKER --- */}
       <section className="symptom-section">
         <div className="symptom-container">
           <div className="symptom-left">
@@ -185,14 +172,11 @@ const Home = () => {
             <textarea 
               className="symptom-input" 
               rows="3"
-              // Placeholder changes based on login status
               placeholder={isLoggedIn 
                 ? "E.g., I have a severe toothache and sensitivity to cold water..." 
                 : "Please login to describe your symptoms..."}
               value={symptomDesc}
               onChange={(e) => setSymptomDesc(e.target.value)}
-              // Optional: Disable typing if not logged in
-              // disabled={!isLoggedIn} 
             ></textarea>
 
             <button 
@@ -227,7 +211,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* --- SERVICES / SPECIALTIES --- */}
+      {/* --- SERVICES --- */}
       <section className="services-section">
         <div className="section-header">
           <h2>Top Specialties</h2>
