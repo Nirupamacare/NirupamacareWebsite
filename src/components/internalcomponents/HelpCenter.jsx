@@ -109,7 +109,7 @@ const HelpCenter = () => {
             <div className={isMenuOpen ? "help-bar open" : "help-bar"}></div>
           </div>
           <ul className={isMenuOpen ? "help-nav-links active" : "help-nav-links"}>
-            <li><a href="/">Home</a></li>
+            <li><a href="/home">Home</a></li>
             <li><a href="/about">About Us</a></li>
             <li><a href="/doctors">Find Doctors</a></li>
             <li><a href="/help" className="help-active-nav-item">Help</a></li>
