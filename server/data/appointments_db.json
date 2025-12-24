@@ -1,0 +1,50 @@
+[
+  {
+    "id": "appt_1766592252479",
+    "doctorId": "doc_001",
+    "doctorName": "Dr. Arindam Sharma",
+    "userId": "guest_user_001",
+    "userName": "Supriti Mishra",
+    "date": "2025-12-24",
+    "timeSlot": "02:00 PM",
+    "consultationType": "Clinic Visit",
+    "status": "booked",
+    "createdAt": "2025-12-24T16:04:12.479Z"
+  },
+  {
+    "id": "appt_1766594685860",
+    "doctorId": "doc_002",
+    "doctorName": "Dr. Priyam Das",
+    "userId": "guest_user_001",
+    "userName": "Supriti Mishra",
+    "date": "2025-12-26",
+    "timeSlot": "10:45 AM",
+    "consultationType": "Clinic Visit",
+    "status": "booked",
+    "createdAt": "2025-12-24T16:44:45.860Z"
+  },
+  {
+    "id": "appt_1766594736187",
+    "doctorId": "doc_004",
+    "doctorName": "Dr. Anjali Verma",
+    "userId": "guest_user_001",
+    "userName": "Supriti Mishra",
+    "date": "2025-12-24",
+    "timeSlot": "04:15 PM",
+    "consultationType": "Clinic Visit",
+    "status": "booked",
+    "createdAt": "2025-12-24T16:45:36.187Z"
+  },
+  {
+    "id": "appt_1766594798767",
+    "doctorId": "doc_001",
+    "doctorName": "Dr. Arindam Sharma",
+    "userId": "guest_user_001",
+    "userName": "Supriti Mishra",
+    "date": "2025-12-27",
+    "timeSlot": "10:45 AM",
+    "consultationType": "Clinic Visit",
+    "status": "booked",
+    "createdAt": "2025-12-24T16:46:38.767Z"
+  }
+]

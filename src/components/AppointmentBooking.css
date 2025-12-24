@@ -1,0 +1,265 @@
+/* AppointmentBooking.css */
+.booking-page {
+    padding: 80px 20px 40px;
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background-color: #f5f7f9;
+}
+
+.booking-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
+    padding: 0;
+    margin-right: 15px;
+}
+
+/* Doctor Summary Card */
+.booking-doctor-card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.booking-doc-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid #e0f2f1;
+}
+
+.booking-doc-name {
+    margin: 0;
+    color: #1a1a1a;
+    font-size: 1.4rem;
+}
+
+.booking-doc-spec {
+    color: #666;
+    margin: 5px 0 15px 0;
+    font-size: 0.95rem;
+}
+
+.booking-tags {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.tag {
+    background-color: #e0f2f1;
+    color: #00897b;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Consultation Type */
+.consultation-type {
+    background: white;
+    padding: 15px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.type-option {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.type-option.selected {
+    border-color: #00897b;
+    background-color: #e0f2f1;
+}
+
+.type-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.type-price {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #00897b;
+}
+
+/* Calendar Section */
+.calendar-section {
+    background: #00695c;
+    color: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.month-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    text-align: center;
+}
+
+.day-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.date-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin: 0 auto;
+}
+
+.date-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.date-btn.selected {
+    background-color: white;
+    color: #00695c;
+    font-weight: bold;
+}
+
+.date-btn.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Slots Section */
+.slots-section {
+    margin-bottom: 30px;
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.slot-btn {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.slot-btn.selected {
+    background-color: #00897b;
+    color: white;
+    border-color: #00897b;
+}
+
+.slot-btn.booked {
+    background-color: #f0f0f0;
+    color: #aaa;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* Confirm Button */
+.btn-confirm-booking {
+    width: 100%;
+    padding: 16px;
+    background-color: #00695c;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-confirm-booking:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Success Modal */
+.success-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.success-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 90%;
+    width: 350px;
+    animation: popIn 0.3s ease;
+}
+
+.success-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.success-modal h2 {
+    color: #00695c;
+    margin-bottom: 10px;
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
