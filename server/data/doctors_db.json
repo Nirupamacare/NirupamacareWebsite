@@ -1,0 +1,105 @@
+[
+    {
+        "id": "doc_001",
+        "name": "Dr. Arindam Sharma",
+        "specialization": "Cardiologist",
+        "location": "Kolkata",
+        "clinicName": "Heart Care Institute",
+        "consultationFee": 800,
+        "rating": 4.8,
+        "verified": true,
+        "availability": "Mon-Fri",
+        "availableSlots": [
+            "10:00 AM",
+            "02:00 PM",
+            "06:00 PM"
+        ]
+    },
+    {
+        "id": "doc_002",
+        "name": "Dr. Priyam Das",
+        "specialization": "Dentist",
+        "location": "Kolkata",
+        "clinicName": "Bright Smile Clinic",
+        "consultationFee": 500,
+        "rating": 4.5,
+        "verified": true,
+        "availability": "Sat-Sun",
+        "availableSlots": [
+            "11:00 AM",
+            "05:00 PM"
+        ]
+    },
+    {
+        "id": "doc_003",
+        "name": "Dr. S. K. Gupta",
+        "specialization": "Gastroenterologist",
+        "location": "Delhi",
+        "clinicName": "Digestive Health Center",
+        "consultationFee": 700,
+        "rating": 4.7,
+        "verified": true,
+        "availability": "Tue-Sat",
+        "availableSlots": [
+            "09:00 AM",
+            "01:00 PM"
+        ]
+    },
+    {
+        "id": "doc_004",
+        "name": "Dr. Anjali Verma",
+        "specialization": "Dermatologist",
+        "location": "Mumbai",
+        "clinicName": "Skin & Glow Clinic",
+        "consultationFee": 600,
+        "rating": 4.9,
+        "verified": true,
+        "availability": "Mon-Sat",
+        "availableSlots": [
+            "04:00 PM",
+            "07:00 PM"
+        ]
+    },
+    {
+        "id": "doc_005",
+        "name": "Dr. Rahul Roy",
+        "specialization": "Orthopedic",
+        "location": "Kolkata",
+        "clinicName": "Bone Joint Care",
+        "consultationFee": 1000,
+        "rating": 4.6,
+        "verified": true,
+        "availability": "Mon-Fri",
+        "availableSlots": [
+            "10:00 AM",
+            "12:00 PM"
+        ]
+    },
+    {
+        "id": "doc_006",
+        "name": "Dr. Sneha Kapoor",
+        "specialization": "General Physician",
+        "location": "Bangalore",
+        "clinicName": "Family Wellness Center",
+        "consultationFee": 400,
+        "rating": 4.4,
+        "verified": true,
+        "availability": "Daily",
+        "availableSlots": [
+            "08:00 AM",
+            "08:00 PM"
+        ]
+    },
+    {
+        "id": "doc_007",
+        "name": "Dr. Vikram Singh",
+        "specialization": "Cardiologist",
+        "location": "Delhi",
+        "clinicName": "City Heart Clinic",
+        "consultationFee": 300,
+        "rating": 3.9,
+        "verified": false,
+        "availability": "Mon-Wed",
+        "availableSlots": []
+    }
+]
