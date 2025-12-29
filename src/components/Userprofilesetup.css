@@ -8,6 +8,7 @@
   --white: #ffffff;
   --border-color: #dadce0;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding-top: 70px;
 }
 
 * {
@@ -32,9 +33,10 @@ body {
   background-color: var(--white);
   height: 70px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 1000;
+  width: 100%;
 }
 
 .nav-container {

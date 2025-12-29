@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, User, Users, Plus, Trash2, Save, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import './UserProfileSetup.css'; 
+import './UserProfilesetup.css'; 
 
 const UserProfileSetup = () => {
   const navigate = useNavigate();
