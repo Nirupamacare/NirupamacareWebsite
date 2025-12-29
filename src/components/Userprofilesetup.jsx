@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, User, Users, Plus, Trash2, Save, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import './UserProfilesetup.css'; 
+import './Userprofilesetup.css'; 
 
 const UserProfileSetup = () => {
   const navigate = useNavigate();
@@ -39,26 +39,29 @@ const UserProfileSetup = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Submitting:", { user: formData, family: familyMembers });
+    // Save completion flag
+    localStorage.setItem('profileCompleted', 'true');
     navigate('/home');
   };
 
   return (
-    <div className="page-wrapper">
+    // STRICT ISOLATION WRAPPER
+    <div id="setup-page-root">
       
-      {/* --- Navbar (Identical to Login) --- */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="logo">
-             <img src="nirupama1.png" className="logo-icon-img" alt="Logo" />   
+      {/* --- Navbar (Scoped) --- */}
+      <nav className="setup-navbar">
+        <div className="setup-nav-container">
+          <div className="setup-logo">
+             <img src="nirupama1.png" className="setup-logo-img" alt="Logo" />   
           </div>
           
-          <div className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
-            <div className={isMenuOpen ? "bar open" : "bar"}></div>
+          <div className="setup-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <div className={isMenuOpen ? "setup-bar open" : "setup-bar"}></div>
+            <div className={isMenuOpen ? "setup-bar open" : "setup-bar"}></div>
+            <div className={isMenuOpen ? "setup-bar open" : "setup-bar"}></div>
           </div>
 
-          <ul className={isMenuOpen ? "nav-links active" : "nav-links"}>
+          <ul className={isMenuOpen ? "setup-nav-links active" : "setup-nav-links"}>
             <li><a href="/">Home</a></li>
             <li><a href="/about">About Us</a></li>
             <li><a href="/doctors">Find Doctors</a></li>
@@ -68,7 +71,7 @@ const UserProfileSetup = () => {
       </nav>
 
       {/* --- Main Content --- */}
-      <div className="content-container">
+      <div className="setup-content-container">
         <div className="setup-card">
           
           <div className="setup-header">
@@ -123,7 +126,7 @@ const UserProfileSetup = () => {
 
             {/* Section 3: Family */}
             <div className="form-section">
-              <h3 className="section-title"><Users size={20} style={{marginRight: '8px', color: 'var(--primary-green)'}}/> Add Family Members</h3>
+              <h3 className="section-title"><Users size={20} style={{marginRight: '8px', color: 'var(--setup-primary)'}}/> Add Family Members</h3>
               <div className="family-box">
                 <div className="family-grid">
                   <div className="input-group mb-0">
@@ -142,7 +145,7 @@ const UserProfileSetup = () => {
                       <option value="Parent">Parent</option>
                     </select>
                   </div>
-                  <button type="button" onClick={addFamilyMember} className="btn-secondary btn-add">
+                  <button type="button" onClick={addFamilyMember} className="setup-btn-add">
                     <Plus size={18} /> Add
                   </button>
                 </div>
@@ -159,7 +162,7 @@ const UserProfileSetup = () => {
                             <p className="f-meta">{member.relationship}, {member.age} yrs</p>
                           </div>
                         </div>
-                        <button type="button" onClick={() => removeFamilyMember(member.id)} className="btn-delete">
+                        <button type="button" onClick={() => removeFamilyMember(member.id)} className="setup-btn-delete">
                           <Trash2 size={18} />
                         </button>
                       </div>
@@ -171,7 +174,7 @@ const UserProfileSetup = () => {
 
             {/* Submit */}
             <div className="action-footer">
-              <button type="submit" className="btn-primary">
+              <button type="submit" className="setup-btn-primary">
                 <Save size={20} /> Save & Continue
               </button>
             </div>
