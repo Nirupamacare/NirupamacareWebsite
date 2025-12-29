@@ -76,6 +76,11 @@
 #home-page-root .home-bar.open:nth-child(2) { opacity: 0; }
 #home-page-root .home-bar.open:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
 
+/* --- Mobile Menu Drawer (Hidden by default) --- */
+#home-page-root .home-mobile-menu {
+  display: none;
+}
+
 /* --- HERO SECTION --- */
 #home-page-root .hero-section {
   min-height: 90vh;
@@ -245,11 +250,17 @@
 
 @keyframes homeFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* --- Mobile --- */
+/* --- Mobile View & Menu Animation --- */
 @media (max-width: 1024px) {
   #home-page-root .hero-content { grid-template-columns: 1fr; text-align: center; gap: 40px; }
   #home-page-root .hero-text h1 { font-size: 2.5rem; }
   #home-page-root .search-box { flex-direction: column; width: 100%; }
+  #home-page-root .btn-search {
+    width: 100%;        /* Makes button span full width */
+    padding: 10px;      /* Increases height/touch area */
+    font-size: 0.9rem;  /* Makes text slightly larger */
+    margin-top: 10px;   /* Adds space between the input and button */
+  }
   #home-page-root .location, #home-page-root .main-search { width: 100%; }
   #home-page-root .hero-stats { justify-content: center; }
   #home-page-root .hero-image { height: 400px; }
@@ -257,8 +268,54 @@
   #home-page-root .cta-banner { flex-direction: column; text-align: center; padding: 40px; }
   #home-page-root .cta-image { margin-top: 40px; }
   #home-page-root .cta-image img { width: 200px; transform: rotate(0); }
+  
   #home-page-root .desktop-only { display: none !important; }
-  #home-page-root .menu-toggle { display: flex; }
+  #home-page-root .home-menu-toggle { display: flex; }
   #home-page-root .symptom-container { flex-direction: column; }
   #home-page-root .symptom-right { border-left: none; border-top: 1px solid #eee; padding: 2rem; }
+
+  /* Mobile Menu Container */
+  #home-page-root .home-mobile-menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-top: 1px solid #f0f0f0;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+    padding: 20px;
+    gap: 15px;
+    transform: translateY(-150%);
+    transition: transform 0.3s ease;
+    z-index: 990;
+  }
+
+  #home-page-root .home-mobile-menu.open {
+    transform: translateY(0);
+  }
+
+  #home-page-root .home-mobile-menu a {
+    text-decoration: none;
+    color: var(--home-text-dark);
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+
+  #home-page-root .mobile-divider {
+    border: 0;
+    border-top: 1px solid #eee;
+    width: 100%;
+  }
+
+  #home-page-root .mobile-auth-btn {
+    margin-top: 10px;
+  }
+
+  #home-page-root .full-width {
+    width: 100%;
+  }
 }
