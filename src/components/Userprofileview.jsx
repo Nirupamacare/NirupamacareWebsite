@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, MapPin, Calendar, Users, ArrowLeft, Edit3, ShieldCheck, Activity } from 'lucide-react';
 import { api } from '../api';
-import './UserProfileView.css'; 
+import './UserprofileView.css'; 
 
 const UserProfileView = () => {
   const navigate = useNavigate();
