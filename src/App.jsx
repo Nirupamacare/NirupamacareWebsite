@@ -11,7 +11,7 @@ import About from "./components/About";
 import Security from "./components/Security";
 import Otp from "./components/Otp";
 import Doctors from "./components/Doctors";
-import UserProfileView from "./components/Userprofileview";
+import UserProfileView from "./components/UserprofileView";
 import AppointmentBooking from "./components/AppointmentBooking";
 import "./App.css";
 
