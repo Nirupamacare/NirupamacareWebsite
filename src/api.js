@@ -2,7 +2,7 @@ import axios from 'axios';
 import { auth } from './firebase'; 
 import { onAuthStateChanged } from "firebase/auth"; 
 
-const API_URL = "http://127.0.0.1:8000/v1";
+const API_URL = "https://api-48aa.vercel.app/v1";
 
 // Helper: Get Token robustly
 const getAuthToken = () => {
