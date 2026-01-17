@@ -100,7 +100,12 @@ export const api = {
             });
             return response.data;
         } catch (error) {
-            console.error("Get Doctor Profile Error:", error);
+            console.error("Get Doctor Profile Error:", {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                message: error.message
+            });
             throw error;
         }
     },
@@ -114,7 +119,12 @@ export const api = {
             });
             return response.data; // Expecting Array of appointments
         } catch (error) {
-            console.error("Get Appointments Error:", error);
+            console.error("Get Appointments Error:", {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                message: error.message
+            });
             // Return empty array to prevent UI crash if endpoint fails or returns 404
             return [];
         }
@@ -129,7 +139,12 @@ export const api = {
             });
             return response.data; // Expecting Array of slots
         } catch (error) {
-            console.error("Get Availability Error:", error);
+            console.error("Get Availability Error:", {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                message: error.message
+            });
             return [];
         }
     },

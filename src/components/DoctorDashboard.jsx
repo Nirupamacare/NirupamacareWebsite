@@ -4,7 +4,9 @@ import {
   CheckCircle, XCircle, Plus, Trash2, LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
 import { api } from '../api';
+import { auth } from '../firebase';
 import './DoctorDashboard.css';
 
 const DoctorDashboard = () => {
@@ -25,15 +27,33 @@ const DoctorDashboard = () => {
 
   // --- Load Data ---
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    // Wait for Firebase to restore authentication state
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        // User is not authenticated
+        console.error("User not authenticated, redirecting to login");
+        navigate('/doctor-login');
+        return;
+      }
+
+      // User is authenticated, proceed to fetch data
       try {
         setLoading(true);
 
         // 1. Fetch Data in Parallel
         const [profileData, appointmentsData, availabilityData] = await Promise.all([
-          api.getDoctorProfile().catch(() => null),
-          api.getDoctorAppointments().catch(() => []),
-          api.getDoctorAvailability().catch(() => [])
+          api.getDoctorProfile().catch((err) => {
+            console.error("Profile fetch error:", err);
+            return null;
+          }),
+          api.getDoctorAppointments().catch((err) => {
+            console.error("Appointments fetch error:", err);
+            return [];
+          }),
+          api.getDoctorAvailability().catch((err) => {
+            console.error("Availability fetch error:", err);
+            return [];
+          })
         ]);
 
         if (profileData) setDoctorProfile(profileData);
@@ -55,13 +75,18 @@ const DoctorDashboard = () => {
 
       } catch (err) {
         console.error("Failed to load dashboard data", err);
+        // Check if it's an authentication error
+        if (err.response?.status === 401) {
+          navigate('/doctor-login');
+        }
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    fetchDashboardData();
-  }, []);
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [navigate]);
 
   // --- Handlers ---
   const handleLogout = async () => {
