@@ -263,7 +263,11 @@ const DoctorDashboard = () => {
               <span className="dash-username">{doctorProfile?.first_name || doctorProfile?.display_name?.split(' ')[0] || 'Doctor'}</span>
             </div>
             <div className="dash-avatar">
-              {doctorProfile?.first_name ? doctorProfile.first_name[0] : (doctorProfile?.display_name ? doctorProfile.display_name[0] : 'D')}
+              {doctorProfile?.profile_image_url ? (
+                <img src={doctorProfile.profile_image_url} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                doctorProfile?.first_name ? doctorProfile.first_name[0] : (doctorProfile?.display_name ? doctorProfile.display_name[0] : 'D')
+              )}
             </div>
           </div>
 
@@ -286,10 +290,23 @@ const DoctorDashboard = () => {
         {/* Sidebar */}
         <aside className="dash-sidebar">
           <div className="sidebar-profile">
-            <div className="avatar-circle">
-              {doctorProfile?.display_name ? doctorProfile.display_name[0] : 'D'}
+            <div className="avatar-circle" onClick={() => navigate('/doctor-edit')} style={{ cursor: 'pointer', position: 'relative' }}>
+              {doctorProfile?.profile_image_url ? (
+                <img src={doctorProfile.profile_image_url} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                doctorProfile?.display_name ? doctorProfile.display_name[0] : 'D'
+              )}
+              {/* Optional: Add a small edit icon overlay */}
+              <div style={{
+                position: 'absolute', bottom: '0', right: '0',
+                background: '#007bff', color: 'white', borderRadius: '50%',
+                width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '12px', border: '2px solid white'
+              }}>
+                ✎
+              </div>
             </div>
-            <h3>{doctorProfile?.display_name || "Doctor"}</h3>
+            <h3 onClick={() => navigate('/doctor-edit')} style={{ cursor: 'pointer' }}>{doctorProfile?.display_name || "Doctor"}</h3>
             <p>{doctorProfile?.specialty || "Specialist"}</p>
           </div>
 

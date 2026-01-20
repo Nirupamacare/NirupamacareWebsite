@@ -10,14 +10,14 @@ const About = () => {
   return (
     // WRAPPER ID to isolate styles
     <div id="about-page-root">
-      
+
       {/* --- Navbar (Scoped Classes) --- */}
       <nav className="about-navbar">
         <div className="about-nav-container">
           <div className="about-logo" onClick={() => navigate('/')}>
-             <img src="nirupama1.png" className="about-logo-img" alt="Logo" />   
+            <img src="nirupama1.png" className="about-logo-img" alt="Logo" />
           </div>
-          
+
           <div className="about-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <div className={isMenuOpen ? "about-bar open" : "about-bar"}></div>
             <div className={isMenuOpen ? "about-bar open" : "about-bar"}></div>
@@ -69,20 +69,20 @@ const About = () => {
       <section className="about-section bg-gray">
         <div className="about-container split-layout">
           <div className="story-image-wrapper">
-            <img 
-              src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
-              alt="Our Beginning" 
+            <img
+              src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+              alt="Our Beginning"
               className="story-img"
             />
           </div>
           <div className="story-content">
             <h2>Our Journey</h2>
             <p>
-              Founded in 2023, Nirupama Health started with a simple idea: 
+              Founded in 2025, Nirupama Health started with a simple idea:
               <strong> Healthcare should be accessible to everyone, everywhere.</strong>
             </p>
             <p>
-              What began as a small project to digitize patient records has grown into a 
+              What began as a small project to digitize patient records has grown into a
               comprehensive ecosystem. We believe in a future where quality medical advice is just a click away.
             </p>
           </div>
@@ -92,74 +92,74 @@ const About = () => {
       {/* --- Standards Section --- */}
       <section className="about-section bg-white">
         <div className="about-container">
-            <div className="section-header">
-                <h2>Our Standards</h2>
-                <p>We refuse to compromise on quality, security, or trust.</p>
+          <div className="section-header">
+            <h2>Our Standards</h2>
+            <p>We refuse to compromise on quality, security, or trust.</p>
+          </div>
+
+          <div className="standards-grid">
+            <div className="standard-card">
+              <div className="s-icon"><ShieldCheck size={36} /></div>
+              <h3>100% Verified</h3>
+              <p>Every doctor on Nirupama undergoes a rigorous 3-step verification process covering degrees, medical registration, and practice history.</p>
             </div>
-            
-            <div className="standards-grid">
-                <div className="standard-card">
-                    <div className="s-icon"><ShieldCheck size={36}/></div>
-                    <h3>100% Verified</h3>
-                    <p>Every doctor on Nirupama undergoes a rigorous 3-step verification process covering degrees, medical registration, and practice history.</p>
-                </div>
-                <div className="standard-card">
-                    <div className="s-icon"><Lock size={36}/></div>
-                    <h3>Data Privacy</h3>
-                    <p>Your health data is sacred. We use military-grade 256-bit encryption and are fully compliant with digital health data protection laws.</p>
-                </div>
-                <div className="standard-card">
-                    <div className="s-icon"><Headphones size={36}/></div>
-                    <h3>24/7 Support</h3>
-                    <p>Healthcare doesn't stop at 5 PM. Our dedicated support team is available round the clock to assist with bookings and urgent queries.</p>
-                </div>
+            <div className="standard-card">
+              <div className="s-icon"><Lock size={36} /></div>
+              <h3>Data Privacy</h3>
+              <p>Your health data is sacred. We use military-grade 256-bit encryption and are fully compliant with digital health data protection laws.</p>
             </div>
+            <div className="standard-card">
+              <div className="s-icon"><Headphones size={36} /></div>
+              <h3>24/7 Support</h3>
+              <p>Healthcare doesn't stop at 5 PM. Our dedicated support team is available round the clock to assist with bookings and urgent queries.</p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* --- How It Works --- */}
       <section className="about-section bg-gray process-section">
         <div className="about-container">
-            <div className="section-header">
-                <h2>How It Works</h2>
-                <p>Simplified healthcare in three easy steps.</p>
-            </div>
-            
-            <div className="process-grid">
-                {/* Step 1 */}
-                <div className="process-step">
-                    <div className="step-icon-wrapper">
-                        <Search size={40} />
-                        <span className="step-number">1</span>
-                    </div>
-                    <h3>Find a Specialist</h3>
-                    <p>Search by symptoms, specialty, or doctor name. Filter by location and availability.</p>
-                </div>
+          <div className="section-header">
+            <h2>How It Works</h2>
+            <p>Simplified healthcare in three easy steps.</p>
+          </div>
 
-                {/* Step 2 */}
-                <div className="process-step">
-                    <div className="step-icon-wrapper">
-                        <Calendar size={40} />
-                        <span className="step-number">2</span>
-                    </div>
-                    <h3>Book Instantly</h3>
-                    <p>Choose a time slot that works for you and confirm your appointment in seconds.</p>
-                </div>
-
-                {/* Step 3 */}
-                <div className="process-step">
-                    <div className="step-icon-wrapper">
-                        <Smile size={40} />
-                        <span className="step-number">3</span>
-                    </div>
-                    <h3>Get Better</h3>
-                    <p>Visit the clinic or consult online. Access your prescriptions digitally anytime.</p>
-                </div>
+          <div className="process-grid">
+            {/* Step 1 */}
+            <div className="process-step">
+              <div className="step-icon-wrapper">
+                <Search size={40} />
+                <span className="step-number">1</span>
+              </div>
+              <h3>Find a Specialist</h3>
+              <p>Search by symptoms, specialty, or doctor name. Filter by location and availability.</p>
             </div>
+
+            {/* Step 2 */}
+            <div className="process-step">
+              <div className="step-icon-wrapper">
+                <Calendar size={40} />
+                <span className="step-number">2</span>
+              </div>
+              <h3>Book Instantly</h3>
+              <p>Choose a time slot that works for you and confirm your appointment in seconds.</p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="process-step">
+              <div className="step-icon-wrapper">
+                <Smile size={40} />
+                <span className="step-number">3</span>
+              </div>
+              <h3>Get Better</h3>
+              <p>Visit the clinic or consult online. Access your prescriptions digitally anytime.</p>
+            </div>
+          </div>
         </div>
       </section>
 
-    
+
     </div>
   );
 };

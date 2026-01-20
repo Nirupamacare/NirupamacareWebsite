@@ -27,6 +27,7 @@ const DoctorProfileSetup = () => {
           setFormData({
             first_name: profile.first_name || '',
             last_name: profile.last_name || '',
+            profile_image_url: profile.profile_image_url || '',
             display_name: profile.display_name || '',
             specialty: profile.specialty || '',
             experience_years: profile.experience_years || '',
@@ -57,6 +58,7 @@ const DoctorProfileSetup = () => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
+    profile_image_url: '', // New field
     display_name: '',
     specialty: '',
     experience_years: '',
@@ -93,7 +95,7 @@ const DoctorProfileSetup = () => {
       };
 
       await api.createDoctorProfile(payload);
-      await api.createDoctorProfile(payload);
+      // await api.createDoctorProfile(payload); // Duplicate removed
       alert(isEditing ? "Profile Updated Successfully!" : "Doctor Profile Created Successfully!");
       navigate('/doctor-dashboard');
 
@@ -127,18 +129,84 @@ const DoctorProfileSetup = () => {
             {/* 1. Basic Info */}
             <div className="form-section">
               <h3 className="section-title">Personal Details</h3>
+
+              {/* --- Profile Picture Upload --- */}
+              <div className="profile-upload-section" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div className="avatar-preview" style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#eee', border: '2px solid #ddd' }}>
+                  <img
+                    src={formData.profile_image_url || `https://ui-avatars.com/api/?name=${formData.first_name}+${formData.last_name}&background=random`}
+                    alt="Profile"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="photo-upload"
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      try {
+                        setIsSubmitting(true);
+                        const res = await api.uploadDoctorPhoto(file);
+
+                        // Construct absolute URL for the image
+                        // Logic: If the API is local (localhost:8000), we need to prepend it.
+                        // Ideally, api.js should export API_URL, but we can infer it or try relative.
+                        // Since <img src="/static/..."> only works if frontend is proxied or same origin,
+                        // and here frontend is 5173 and backend is 8000.
+
+                        let fullUrl = res.url;
+                        if (res.url.startsWith('/static')) {
+                          // Assume localhost:8000 for development as per current setup
+                          fullUrl = `http://localhost:8000${res.url}`;
+                        }
+
+                        // Debug Alert (Temporary)
+                        // alert("File Uploaded! New URL: " + fullUrl);
+
+                        setFormData(prev => ({ ...prev, profile_image_url: fullUrl }));
+                      } catch (err) {
+                        console.error("Upload error details:", err);
+                        alert("Failed to upload photo: " + (err.response?.data?.detail || err.message));
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn-upload"
+                    onClick={() => document.getElementById('photo-upload').click()}
+                    style={{
+                      padding: '8px 16px',
+                      background: '#007bff',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {isSubmitting ? 'Uploading...' : 'Upload Photo'}
+                  </button>
+                  <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>Recommended: Square JPG/PNG</p>
+                </div>
+              </div>
+
               <div className="form-grid">
                 <div className="input-group">
                   <label>First Name</label>
-                  <input name="first_name" onChange={handleChange} required placeholder="Dr. John" />
+                  <input name="first_name" value={formData.first_name} onChange={handleChange} required placeholder="Dr. John" />
                 </div>
                 <div className="input-group">
                   <label>Last Name</label>
-                  <input name="last_name" onChange={handleChange} required placeholder="Doe" />
+                  <input name="last_name" value={formData.last_name} onChange={handleChange} required placeholder="Doe" />
                 </div>
                 <div className="input-group full-width">
                   <label>Display Name</label>
-                  <input name="display_name" onChange={handleChange} placeholder="Dr. John Doe, MD" />
+                  <input name="display_name" value={formData.display_name} onChange={handleChange} placeholder="Dr. John Doe, MD" />
                 </div>
               </div>
             </div>

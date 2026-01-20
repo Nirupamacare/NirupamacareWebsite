@@ -36,6 +36,7 @@ const AppointmentBooking = () => {
                         consultationFee: docData.price_clinic !== undefined ? docData.price_clinic : (docData.consultationFee || 0),
                         consultationFeeOnline: docData.price_online !== undefined ? docData.price_online : 0,
                         specialization: docData.specialty || docData.specialization || "Specialist",
+                        profile_image_url: docData.profile_image_url || "", // Added mapping
                         searchedAvailabilities: docData.availabilities || []
                     };
                     setDoctor(mappedDoc);
@@ -90,9 +91,28 @@ const AppointmentBooking = () => {
             let current = new Date(`2000-01-01T${dayAvail.start_time}`);
             const end = new Date(`2000-01-01T${dayAvail.end_time}`);
 
+            // Get current time to compare
+            const now = new Date();
+            // Check if selectDate is today (compare YYYY-MM-DD strings to avoid offset issues)
+            const isToday = selectedDate === now.toISOString().split('T')[0];
+
             while (current < end) {
                 const timeStr = current.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-                slots.push({ time: timeStr, available: true });
+
+                let isSlotAvailable = true;
+
+                if (isToday) {
+                    // Create a comparable date object for this slot today
+                    const slotDateTime = new Date();
+                    slotDateTime.setHours(current.getHours(), current.getMinutes(), 0, 0);
+
+                    // If slot time is in the past, disable it
+                    if (slotDateTime < now) {
+                        isSlotAvailable = false;
+                    }
+                }
+
+                slots.push({ time: timeStr, available: isSlotAvailable });
                 current.setMinutes(current.getMinutes() + 30);
             }
 
@@ -181,9 +201,10 @@ const AppointmentBooking = () => {
             {/* Doctor Card */}
             <div className="booking-doctor-card">
                 <img
-                    src={`https://ui-avatars.com/api/?name=${doctor.name}&background=random`}
+                    src={doctor.profile_image_url || `https://ui-avatars.com/api/?name=${doctor.name}&background=random`}
                     alt={doctor.name}
                     className="booking-doc-img"
+                    style={{ objectFit: 'cover' }}
                 />
                 <h3 className="booking-doc-name">{doctor.name}</h3>
                 <p className="booking-doc-spec">{doctor.specialization}</p>

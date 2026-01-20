@@ -21,6 +21,11 @@ const Doctors = () => {
         specialization: initialSpec
     });
 
+    // Client-side Filter States
+    const [filterPrice, setFilterPrice] = useState(3000);
+    const [filterRating, setFilterRating] = useState(0);
+    const [sortBy, setSortBy] = useState('none');
+
     // Sync local state with URL params if they change externally (e.g. back button)
     useEffect(() => {
         setFilters({
@@ -67,7 +72,51 @@ const Doctors = () => {
         navigate(`/doctors?${params.toString()}`);
     };
 
+    // --- Filter & Sort Logic ---
+    const getFilteredDoctors = () => {
+        let result = [...doctors];
+
+        // 1. Price Filter (Show doctors where price <= filterPrice)
+        // We check both clinic and online price. if either is within range, show it.
+        result = result.filter(doc => {
+            const pClinic = doc.price_clinic || 0;
+            const pOnline = doc.price_online || 0;
+            // If no price set, treat as 0 (free/negotiable) or filter out? 
+            // Usually treating as 0 means it passes filter. 
+            // If strictly ensuring valid price:
+            const effectivePrice = Math.min(pClinic || 99999, pOnline || 99999);
+            return effectivePrice <= filterPrice;
+        });
+
+        // 2. Rating Filter
+        if (filterRating > 0) {
+            result = result.filter(doc => (doc.rating || 0) >= filterRating);
+        }
+
+        // 3. Sorting
+        if (sortBy === 'price_low') {
+            result.sort((a, b) => {
+                const pa = Math.min(a.price_clinic || 99999, a.price_online || 99999);
+                const pb = Math.min(b.price_clinic || 99999, b.price_online || 99999);
+                return pa - pb;
+            });
+        } else if (sortBy === 'price_high') {
+            result.sort((a, b) => {
+                const pa = Math.max(a.price_clinic || 0, a.price_online || 0);
+                const pb = Math.max(b.price_clinic || 0, b.price_online || 0);
+                return pb - pa;
+            });
+        } else if (sortBy === 'rating') {
+            result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        }
+
+        return result;
+    };
+
+    const displayDoctors = getFilteredDoctors();
+
     return (
+
         <div className="doctors-page">
             <header className="docs-header">
                 <h1>Find your Doctor</h1>
@@ -88,26 +137,67 @@ const Doctors = () => {
                 </div>
             </header>
 
-            <div className="doctors-grid">
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Loading doctors...</p>
+            <div className="doctors-content">
+                {/* --- Sidebar Filters --- */}
+                <aside className="filters-sidebar">
+                    <div className="filter-group">
+                        <h3>Filters</h3>
                     </div>
-                ) : (
-                    <>
-                        {doctors.length > 0 ? (
-                            doctors.map(doc => (
-                                <DoctorCard key={doc.id || doc._id} doctor={doc} />
-                            ))
-                        ) : (
-                            <div className="empty-state">
-                                <h3>No doctors found matching your criteria.</h3>
-                                <p>Try clearing filters or changing your location.</p>
-                            </div>
-                        )}
-                    </>
-                )}
+
+                    <div className="filter-group">
+                        <label>Max Price: ₹{filterPrice}</label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="5000"
+                            step="100"
+                            value={filterPrice}
+                            onChange={(e) => setFilterPrice(Number(e.target.value))}
+                        />
+                    </div>
+
+                    <div className="filter-group">
+                        <label>Min Rating</label>
+                        <select value={filterRating} onChange={(e) => setFilterRating(Number(e.target.value))}>
+                            <option value="0">Any Rating</option>
+                            <option value="3">3+ Stars</option>
+                            <option value="4">4+ Stars</option>
+                            <option value="4.5">4.5+ Stars</option>
+                        </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <label>Sort By</label>
+                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                            <option value="none">Relevance</option>
+                            <option value="price_low">Price: Low to High</option>
+                            <option value="price_high">Price: High to Low</option>
+                            <option value="rating">Rating: High to Low</option>
+                        </select>
+                    </div>
+                </aside>
+
+                <div className="doctors-grid">
+                    {loading ? (
+                        <div className="loading-state">
+                            <div className="spinner"></div>
+                            <p>Loading doctors...</p>
+                        </div>
+                    ) : (
+                        <>
+                            {displayDoctors.length > 0 ? (
+                                displayDoctors.map(doc => (
+                                    <DoctorCard key={doc.id || doc._id} doctor={doc} />
+                                ))
+                            ) : (
+                                <div className="empty-state">
+                                    <h3>No doctors found matching filters.</h3>
+                                    <p>Try adjusting your search criteria.</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );

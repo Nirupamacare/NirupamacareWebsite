@@ -112,6 +112,26 @@ export const api = {
         }
     },
 
+    // Upload Doctor Photo
+    uploadDoctorPhoto: async (file) => {
+        try {
+            const token = await getAuthToken();
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await axios.post(`${API_URL}/doctor/upload-photo`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                    // Removed manual Content-Type: multipart/form-data to let Axios set it with boundary
+                }
+            });
+            return response.data; // { url: "..." }
+        } catch (error) {
+            console.error("Upload Photo Error:", error);
+            throw error;
+        }
+    },
+
     // Get Current Doctor Profile (Name, Specialty, etc.)
     getDoctorProfile: async () => {
         try {

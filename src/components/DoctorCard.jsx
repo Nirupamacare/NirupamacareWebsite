@@ -13,24 +13,22 @@ const DoctorCard = ({ doctor }) => {
     const rating = doctor.rating || 0;
     const clinicFee = doctor.price_clinic || 0;
     const onlineFee = doctor.price_online || 0;
-    let feeDisplay;
-    if (clinicFee > 0) {
-        feeDisplay = `₹${clinicFee} / Visit`;
-    } else if (onlineFee > 0) {
-        feeDisplay = `₹${onlineFee} (Online)`;
-    } else {
-        feeDisplay = "Consult Fee N/A";
-    }
+    const feeDisplay = [];
+    if (clinicFee > 0) feeDisplay.push(`₹${clinicFee} (Clinic)`);
+    if (onlineFee > 0) feeDisplay.push(`₹${onlineFee} (Online)`);
+    if (feeDisplay.length === 0) feeDisplay.push("Consult Fee N/A");
 
     const slots = doctor.availabilities || doctor.availableSlots || [];
     const verified = true; // Placeholder
+
+    const imageUrl = doctor.profile_image_url || `https://ui-avatars.com/api/?name=${name}&background=random`;
 
     return (
         <div className="doctor-card">
             <div className="doctor-card-content">
                 <div className="doctor-image-container">
                     <img
-                        src={`https://ui-avatars.com/api/?name=${name}&background=random`}
+                        src={imageUrl}
                         alt={name}
                         className="doctor-img"
                     />
@@ -45,7 +43,7 @@ const DoctorCard = ({ doctor }) => {
 
                     <div className="doctor-meta">
                         <span className="doctor-rating">⭐ {rating}</span>
-                        <span className="doctor-fee">{feeDisplay}</span>
+                        <span className="doctor-fee">{feeDisplay.join(" | ")}</span>
                     </div>
 
                     <div className="doctor-slots">

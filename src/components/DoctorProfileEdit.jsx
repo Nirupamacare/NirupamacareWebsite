@@ -8,6 +8,7 @@ const DoctorProfileEdit = () => {
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [viewImage, setViewImage] = useState(false); // State for image viewer modal
 
     // Toggles for Availability
     const [availability, setAvailability] = useState({
@@ -18,6 +19,7 @@ const DoctorProfileEdit = () => {
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
+        profile_image_url: '', // Added field
         display_name: '',
         specialty: '',
         experience_years: '',
@@ -39,9 +41,16 @@ const DoctorProfileEdit = () => {
                 console.log("Edit Page Loaded Profile:", profile);
 
                 if (profile) {
+                    // Logic to ensure image URL is absolute for localhost
+                    let validImgUrl = profile.profile_image_url || '';
+                    if (validImgUrl && validImgUrl.startsWith('/static')) {
+                        validImgUrl = `http://localhost:8000${validImgUrl}`;
+                    }
+
                     setFormData({
                         first_name: profile.first_name || '',
                         last_name: profile.last_name || '',
+                        profile_image_url: validImgUrl,
                         display_name: profile.display_name || '',
                         specialty: profile.specialty || '',
                         experience_years: profile.experience_years || '',
@@ -91,7 +100,6 @@ const DoctorProfileEdit = () => {
                 languages: formData.languages.split(',').map(lang => lang.trim()).filter(l => l)
             };
 
-            // Helper to update (uses same endpoint as create implies upsert)
             await api.createDoctorProfile(payload);
             alert("Profile Updated Successfully!");
             navigate('/doctor-dashboard');
@@ -117,7 +125,6 @@ const DoctorProfileEdit = () => {
             <nav className="doc-navbar">
                 <div className="doc-nav-container">
                     <div className="doc-logo" onClick={() => navigate('/doctor-dashboard')}>
-                        {/* Back Arrow Logic */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#0f9d58', fontWeight: 'bold' }}>
                             <ArrowLeft size={24} /> Back to Dashboard
                         </div>
@@ -137,6 +144,66 @@ const DoctorProfileEdit = () => {
                         {/* 1. Basic Info */}
                         <div className="form-section">
                             <h3 className="section-title">Personal Details</h3>
+
+                            {/* --- Profile Picture Upload --- */}
+                            <div className="profile-upload-section" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                <div
+                                    className="avatar-preview"
+                                    style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#eee', border: '2px solid #ddd', cursor: 'pointer' }}
+                                    onClick={() => formData.profile_image_url && setViewImage(true)}
+                                    title="Click to view full size"
+                                >
+                                    <img
+                                        src={formData.profile_image_url || `https://ui-avatars.com/api/?name=${formData.first_name}+${formData.last_name}&background=random`}
+                                        alt="Profile"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                </div>
+                                <div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        id="edit-photo-upload"
+                                        style={{ display: 'none' }}
+                                        onChange={async (e) => {
+                                            const file = e.target.files[0];
+                                            if (!file) return;
+                                            try {
+                                                setIsSubmitting(true);
+                                                const res = await api.uploadDoctorPhoto(file);
+
+                                                let fullUrl = res.url;
+                                                if (res.url.startsWith('/static')) {
+                                                    fullUrl = `http://localhost:8000${res.url}`;
+                                                }
+
+                                                setFormData(prev => ({ ...prev, profile_image_url: fullUrl }));
+                                            } catch (err) {
+                                                console.error("Upload error details:", err);
+                                                alert("Failed to upload photo: " + (err.response?.data?.detail || err.message));
+                                            } finally {
+                                                setIsSubmitting(false);
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn-upload"
+                                        onClick={() => document.getElementById('edit-photo-upload').click()}
+                                        style={{
+                                            padding: '8px 16px',
+                                            background: '#007bff',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        {isSubmitting ? 'Uploading...' : 'Upload Photo'}
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="form-grid">
                                 <div className="input-group">
                                     <label>First Name</label>
@@ -268,6 +335,35 @@ const DoctorProfileEdit = () => {
                     </form>
                 </div>
             </div>
+
+            {/* Image Viewer Modal */}
+            {viewImage && formData.profile_image_url && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
+                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    animation: 'fadeIn 0.2s ease-out'
+                }} onClick={() => setViewImage(false)}>
+                    <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }} onClick={e => e.stopPropagation()}>
+                        <img
+                            src={formData.profile_image_url}
+                            alt="Full Size Profile"
+                            style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', boxShadow: '0 4px 30px rgba(0,0,0,0.5)', border: '2px solid white' }}
+                        />
+                        <button
+                            style={{
+                                position: 'absolute', top: '-40px', right: '-10px',
+                                background: 'white', border: 'none', color: '#333',
+                                width: '30px', height: '30px', borderRadius: '50%', fontWeight: 'bold', cursor: 'pointer'
+                            }}
+                            onClick={() => setViewImage(false)}
+                            title="Close"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

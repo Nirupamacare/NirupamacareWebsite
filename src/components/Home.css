@@ -1131,7 +1131,6 @@
 @media (max-width: 768px) {
     #home-page-root .symptom-container {
         flex-direction: column-reverse;
-        /* Put character on top on mobile? Or bottom. Let's do bottom of input. */
     }
 
     #home-page-root .symptom-right {
@@ -1141,10 +1140,74 @@
 
     #home-page-root .character-wrapper {
         width: 150px;
-        /* Smaller on mobile */
     }
 
     #home-page-root .speech-bubble {
         width: 100%;
+    }
+}
+
+/* --- PHONE VIEW OPTIMIZATIONS (Max Width 600px) --- */
+@media (max-width: 600px) {
+
+    /* Compact Services/Top Specialties Section */
+    #home-page-root .services-section {
+        padding: 30px 15px;
+        /* Reduced vertical padding */
+    }
+
+    #home-page-root .section-header h2 {
+        font-size: 1.5rem;
+        /* Smaller Title */
+        margin-bottom: 5px;
+    }
+
+    #home-page-root .section-header p {
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+
+    #home-page-root .services-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        /* Force 2 columns */
+        gap: 12px;
+    }
+
+    #home-page-root .service-card {
+        padding: 12px;
+        /* Less padding inside cards */
+        border-radius: 12px;
+    }
+
+    #home-page-root .service-card img {
+        width: 40px;
+        /* Smaller Icons */
+        margin-bottom: 8px;
+    }
+
+    #home-page-root .service-card h3 {
+        font-size: 0.9rem;
+        /* Smaller Headings */
+        margin-bottom: 4px;
+    }
+
+    #home-page-root .service-card p {
+        font-size: 0.75rem;
+        /* Smaller Text */
+        line-height: 1.2;
+    }
+
+    /* Additional Compactness for Layout */
+    #home-page-root .hero-section {
+        padding: 60px 15px 20px;
+    }
+
+    #home-page-root .search-box {
+        padding: 8px;
+    }
+
+    #home-page-root .hero-stats {
+        margin-bottom: 30px;
     }
 }

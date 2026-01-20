@@ -19,6 +19,7 @@ const DoctorProfileView = () => {
                         ...data,
                         id: data._id || data.id,
                         name: data.display_name || data.name || "Doctor",
+                        profile_image_url: data.profile_image_url || "", // Added mapping
                         specialization: data.specialty || data.specialization || "General",
                         clinicName: data.clinic_name || "Clinic Info Not Available",
                         location: data.clinic_address || data.location || data.city || "Location Not Available",
@@ -52,9 +53,10 @@ const DoctorProfileView = () => {
             <div className="profile-card-large">
                 <div className="profile-top">
                     <img
-                        src={`https://ui-avatars.com/api/?name=${doctor.name}&background=random&size=128`}
+                        src={doctor.profile_image_url || `https://ui-avatars.com/api/?name=${doctor.name}&background=random&size=128`}
                         alt={doctor.name}
                         className="profile-avatar-large"
+                        style={{ objectFit: 'cover' }}
                     />
                     <div className="profile-info-large">
                         <div className="name-row">

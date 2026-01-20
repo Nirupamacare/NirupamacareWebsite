@@ -249,19 +249,35 @@ const Home = () => {
               <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>{userProfile.name}</span>
             </div>
           )}
+
+          {/* Primary Nav Items */}
           <a onClick={() => handleNavigation('/doctors')}>Get Doctor</a>
           <a onClick={() => handleNavigation('/video-consult')}>Video Consult</a>
           <a onClick={() => handleNavigation('/lab-tests')}>Book Lab Test</a>
+
           <hr className="mobile-divider" />
-          <a onClick={() => handleNavigation('/view-profile')}>View Profile</a>
-          <a onClick={() => handleNavigation('/help')}>Help</a>
-          <div className="mobile-auth-btn">
-            {isLoggedIn ? (
-              <button className="home-btn-login full-width" onClick={handleLogout}>Logout</button>
-            ) : (
-              <button className="home-btn-login full-width" onClick={() => handleNavigation('/login')}>Login / Signup</button>
-            )}
-          </div>
+
+          {/* Conditional Items */}
+          {isLoggedIn ? (
+            <>
+              <a onClick={() => handleNavigation('/view-profile')}>View My Profile</a>
+              <a onClick={() => handleNavigation('/my-appointments')}>My Appointments</a>
+              <a onClick={() => handleNavigation('/security')}>Security</a>
+              <a onClick={() => handleNavigation('/help')}>Help</a>
+              <div className="mobile-auth-btn">
+                <button className="home-btn-login full-width" onClick={handleLogout}>Logout</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <a onClick={() => handleNavigation('/doctor-login')}>For doctors/labs</a>
+              <a onClick={() => handleNavigation('/security')}>Security</a>
+              <a onClick={() => handleNavigation('/help')}>Help</a>
+              <div className="mobile-auth-btn">
+                <button className="home-btn-login full-width" onClick={() => handleNavigation('/login')}>Login / Signup</button>
+              </div>
+            </>
+          )}
         </div>
       </nav>
 
@@ -277,7 +293,10 @@ const Home = () => {
             <div className="search-box-container">
               <div className="search-box">
                 <div className="search-input location">
-                  <span className="icon">📍</span>
+                  <span className="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg></span>
                   <input
                     type="text"
                     placeholder="West Bengal"
@@ -286,7 +305,10 @@ const Home = () => {
                   />
                 </div>
                 <div className="search-input main-search">
-                  <span className="icon">🔍</span>
+                  <span className="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg></span>
                   <input
                     type="text"
                     placeholder="Search doctors (e.g. Dentist)..."
