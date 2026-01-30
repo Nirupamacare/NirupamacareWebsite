@@ -251,6 +251,9 @@ const Home = () => {
                     <div className="dropdown-item" onClick={() => navigate('/my-appointments')}>
                       <span>📅</span> My Appointments
                     </div>
+                    <div className="dropdown-item" onClick={() => navigate('/medical-records')}>
+                      <span>📄</span> Medical Records
+                    </div>
                     <div className="dropdown-item" onClick={() => navigate('/security')}>
                       <span>🛡️</span> Security
                     </div>
@@ -300,6 +303,7 @@ const Home = () => {
             <>
               <a onClick={() => handleNavigation('/view-profile')}>View My Profile</a>
               <a onClick={() => handleNavigation('/my-appointments')}>My Appointments</a>
+              <a onClick={() => handleNavigation('/medical-records')}>Medical Records</a>
               <a onClick={() => handleNavigation('/security')}>Security</a>
               <a onClick={() => handleNavigation('/help')}>Help</a>
               <div className="mobile-auth-btn">

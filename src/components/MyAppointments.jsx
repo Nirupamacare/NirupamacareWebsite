@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { Calendar, Clock, Video, MapPin, ArrowLeft, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, Video, MapPin, ArrowLeft, AlertCircle, CheckCircle, XCircle, FileText, Download, Eye, X } from 'lucide-react';
 import './MyAppointments.css';
 
 const MyAppointments = () => {
@@ -9,6 +9,7 @@ const MyAppointments = () => {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [notification, setNotification] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null); // For lightbox
 
     useEffect(() => {
         const fetch = async () => {
@@ -109,45 +110,90 @@ const MyAppointments = () => {
                 <div className="appointments-list">
                     {appointments.map((apt) => (
                         <div key={apt.id} className="appointment-card">
-                            <div className="apt-left">
-                                <div className="apt-info">
-                                    <div className="apt-header">
-                                        <h3 className="apt-title">{apt.type === 'Online Consult' ? 'Video Consultation' : 'Clinic Visit'}</h3>
-                                        <span className="apt-id">#{apt.id.slice(-6)}</span>
-                                    </div>
-
-                                    <div className="apt-meta">
-                                        <div className="meta-item">
-                                            <Calendar size={16} />
-                                            <span>{apt.date}</span>
+                            <div className="apt-main-row">
+                                <div className="apt-left">
+                                    <div className="apt-info">
+                                        <div className="apt-header">
+                                            <h3 className="apt-title">{apt.type === 'Online Consult' ? 'Video Consultation' : 'Clinic Visit'}</h3>
+                                            <span className="apt-id">#{apt.id.slice(-6)}</span>
                                         </div>
-                                        <div className="meta-item">
-                                            <Clock size={16} />
-                                            <span>{apt.time}</span>
+
+                                        <div className="apt-meta">
+                                            <div className="meta-item">
+                                                <Calendar size={16} />
+                                                <span>{apt.date}</span>
+                                            </div>
+                                            <div className="meta-item">
+                                                <Clock size={16} />
+                                                <span>{apt.time}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className={`apt-type ${apt.type && apt.type.includes('Online') ? 'type-online' : 'type-clinic'}`}>
+                                            {apt.type && apt.type.includes('Online') ? <Video size={14} /> : <MapPin size={14} />}
+                                            <span>{apt.type}</span>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className={`apt-type ${apt.type && apt.type.includes('Online') ? 'type-online' : 'type-clinic'}`}>
-                                        {apt.type && apt.type.includes('Online') ? <Video size={14} /> : <MapPin size={14} />}
-                                        <span>{apt.type}</span>
+                                <div className="apt-right">
+                                    <div className="apt-status">
+                                        <span className={`status-badge ${getStatusClass(apt.status)}`}>
+                                            <span className="status-dot"></span>
+                                            {apt.status}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="apt-right">
-                                <div className="apt-status">
-                                    <span className={`status-badge ${getStatusClass(apt.status)}`}>
-                                        <span className="status-dot"></span>
-                                        {apt.status}
-                                    </span>
-                                    {/* Optional: Add payment status or link to prescription here later */}
+
+
+                            {/* Attachments Section */}
+                            {apt.attachments && apt.attachments.length > 0 && (
+                                <div className="apt-attachments-section">
+                                    <h4>Medical Documents</h4>
+                                    <div className="attachments-grid">
+                                        {apt.attachments.map((fileData, index) => {
+                                            const isPdf = fileData.startsWith('data:application/pdf');
+                                            const isImage = fileData.startsWith('data:image');
+
+                                            return (
+                                                <div key={index} className="attachment-item">
+                                                    {isImage ? (
+                                                        <div className="att-preview-box" onClick={() => setPreviewImage(fileData)}>
+                                                            <img src={fileData} alt="Prescription" />
+                                                            <div className="att-overlay">
+                                                                <Eye size={16} />
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="att-pdf-box">
+                                                            <FileText size={24} className="text-red-500" />
+                                                            <span className="att-label">Prescription (PDF)</span>
+                                                            <a href={fileData} download={`Prescription-${apt.date}.pdf`} className="att-download-btn">
+                                                                <Download size={14} />
+                                                            </a>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     ))}
                 </div>
             )}
-        </div>
+
+            {/* Lightbox for Image Preview */}
+            {previewImage && (
+                <div className="lightbox-overlay" onClick={() => setPreviewImage(null)}>
+                    <button className="lightbox-close"><X size={24} /></button>
+                    <img src={previewImage} alt="Full Preview" onClick={(e) => e.stopPropagation()} />
+                </div>
+            )}
+        </div >
     );
 };
 

@@ -58,8 +58,10 @@ const AppointmentBooking = () => {
                         consultationFee: docData.price_clinic !== undefined ? docData.price_clinic : (docData.consultationFee || 0),
                         consultationFeeOnline: docData.price_online !== undefined ? docData.price_online : 0,
                         specialization: docData.specialty || docData.specialization || "Specialist",
-                        profile_image_url: docData.profile_image_url || "", // Added mapping
-                        searchedAvailabilities: docData.availabilities || []
+                        profile_image_url: docData.profile_image_url || "",
+                        profile_picture: docData.profile_picture || "", // Add Base64 field
+                        searchedAvailabilities: docData.availabilities || [],
+                        blocked_dates: docData.blocked_dates || [] // Map blocked dates
                     };
                     setDoctor(mappedDoc);
 
@@ -109,43 +111,89 @@ const AppointmentBooking = () => {
             const dateObj = new Date(selectedDate);
             const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
 
-            const dayAvail = doctor.searchedAvailabilities?.find(a => a.day === dayName);
+            console.log('🔍 Slot Generation Debug:');
+            console.log('Selected Date:', selectedDate);
+            console.log('Day Name:', dayName);
+            console.log('Doctor Availabilities:', doctor.searchedAvailabilities);
 
-            if (!dayAvail) {
+            // Find ALL availabilities for this day (doctor may have multiple time blocks)
+            const dayAvailabilities = doctor.searchedAvailabilities?.filter(a => a.day === dayName) || [];
+
+            console.log('Found', dayAvailabilities.length, 'availability periods for', dayName, ':', dayAvailabilities);
+
+            if (dayAvailabilities.length === 0) {
+                console.log('❌ No availability found for', dayName);
                 setAvailableSlots([]);
                 return;
             }
 
-            const slots = [];
-            let current = new Date(`2000-01-01T${dayAvail.start_time}`);
-            const end = new Date(`2000-01-01T${dayAvail.end_time}`);
-
-            // Get current time to compare
+            const allSlots = [];
             const now = new Date();
-            // Check if selectDate is today (compare YYYY-MM-DD strings to avoid offset issues)
             const isToday = selectedDate === now.toISOString().split('T')[0];
 
-            while (current < end) {
-                const timeStr = current.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            // Generate slots for EACH availability period
+            dayAvailabilities.forEach((dayAvail, periodIndex) => {
+                console.log(`Generating slots for period ${periodIndex + 1}:`, dayAvail.start_time, '-', dayAvail.end_time);
 
-                let isSlotAvailable = true;
 
-                if (isToday) {
-                    // Create a comparable date object for this slot today
-                    const slotDateTime = new Date();
-                    slotDateTime.setHours(current.getHours(), current.getMinutes(), 0, 0);
+                let current = new Date(`2000-01-01T${dayAvail.start_time}`);
+                const end = new Date(`2000-01-01T${dayAvail.end_time}`);
 
-                    // If slot time is in the past, disable it
-                    if (slotDateTime < now) {
-                        isSlotAvailable = false;
+                // Generate 30-minute slots with time ranges
+                while (current < end) {
+                    const slotStart = new Date(current);
+                    const slotEnd = new Date(current);
+                    slotEnd.setMinutes(slotEnd.getMinutes() + 30);
+
+                    // Don't create a slot if it would go past the end time
+                    if (slotEnd > end) break;
+
+                    const startTimeStr = slotStart.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                    const endTimeStr = slotEnd.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+
+                    // Store in 24-hour format for backend
+                    const timeStr24 = slotStart.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+
+                    let isSlotAvailable = true;
+
+                    if (isToday) {
+                        // Create a comparable date object for this slot today
+                        const slotDateTime = new Date();
+                        slotDateTime.setHours(slotStart.getHours(), slotStart.getMinutes(), 0, 0);
+
+                        // If slot time is in the past, disable it
+                        if (slotDateTime < now) {
+                            isSlotAvailable = false;
+                        }
                     }
+
+                    allSlots.push({
+                        time: timeStr24, // For backend
+                        displayTime: `${startTimeStr} - ${endTimeStr}`, // For UI
+                        available: isSlotAvailable
+                    });
+
+                    current.setMinutes(current.getMinutes() + 30);
                 }
+            });
 
-                slots.push({ time: timeStr, available: isSlotAvailable });
-                current.setMinutes(current.getMinutes() + 30);
-            }
+            // Sort slots by time
+            allSlots.sort((a, b) => a.time.localeCompare(b.time));
 
-            setAvailableSlots(slots);
+            console.log('✅ Generated', allSlots.length, 'total slots across all periods:', allSlots);
+            setAvailableSlots(allSlots);
             setSelectedSlot('');
         };
 
@@ -159,10 +207,16 @@ const AppointmentBooking = () => {
         for (let i = 0; i < 7; i++) {
             const d = new Date(today);
             d.setDate(today.getDate() + i);
+            const dateStr = d.toISOString().split('T')[0];
+
+            // Check if this date is blocked
+            const isBlocked = doctor?.blocked_dates?.includes(dateStr);
+
             dates.push({
-                fullDate: d.toISOString().split('T')[0],
+                fullDate: dateStr,
                 dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
-                dayNum: d.getDate()
+                dayNum: d.getDate(),
+                isBlocked: isBlocked
             });
         }
         return dates;
@@ -243,7 +297,7 @@ const AppointmentBooking = () => {
             {/* Doctor Card */}
             <div className="booking-doctor-card">
                 <img
-                    src={doctor.profile_image_url || `https://ui-avatars.com/api/?name=${doctor.name}&background=random`}
+                    src={doctor.profile_picture || doctor.profile_image_url || `https://ui-avatars.com/api/?name=${doctor.name}&background=random`}
                     alt={doctor.name}
                     className="booking-doc-img"
                     style={{ objectFit: 'cover' }}
@@ -281,18 +335,20 @@ const AppointmentBooking = () => {
             {/* Calendar */}
             <div className="calendar-section">
                 <div className="month-header">
-                    <span>{new Date(selectedDate).toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+                    <span>{new Date(selectedDate || new Date()).toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
                 </div>
                 <div className="days-grid">
                     {generateDates().map((dateItem) => (
                         <div key={dateItem.fullDate}>
                             <div className="day-label">{dateItem.dayName}</div>
-                            <div
-                                className={`date-btn ${selectedDate === dateItem.fullDate ? 'selected' : ''}`}
-                                onClick={() => setSelectedDate(dateItem.fullDate)}
+                            <button
+                                className={`date-btn ${selectedDate === dateItem.fullDate ? 'selected' : ''} ${dateItem.isBlocked ? 'blocked' : ''}`}
+                                onClick={() => !dateItem.isBlocked && setSelectedDate(dateItem.fullDate)}
+                                disabled={dateItem.isBlocked}
+                                title={dateItem.isBlocked ? "Doctor not available" : ""}
                             >
                                 {dateItem.dayNum}
-                            </div>
+                            </button>
                         </div>
                     ))}
                 </div>
@@ -300,7 +356,10 @@ const AppointmentBooking = () => {
 
             {/* Time Slots */}
             <div className="slots-section">
-                <h3>Available Slots</h3>
+                <h3>Available Time Slots</h3>
+                <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '16px' }}>
+                    Select a 30-minute time slot for your appointment
+                </p>
                 <div className="slots-grid">
                     {availableSlots.length > 0 ? availableSlots.map((slot, idx) => (
                         <button
@@ -308,8 +367,9 @@ const AppointmentBooking = () => {
                             className={`slot-btn ${slot.available ? '' : 'booked'} ${selectedSlot === slot.time ? 'selected' : ''}`}
                             onClick={() => slot.available && setSelectedSlot(slot.time)}
                             disabled={!slot.available}
+                            title={slot.available ? `Book ${slot.displayTime}` : 'Time slot has passed'}
                         >
-                            {slot.time}
+                            {slot.displayTime}
                         </button>
                     )) : (
                         <p>No slots available for this day.</p>

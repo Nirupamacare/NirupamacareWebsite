@@ -177,15 +177,34 @@ export const api = {
         }
     },
 
-    updateAppointmentStatus: async (appointmentId, status) => {
+    updateAppointmentStatus: async (appointmentId, status, attachments = []) => {
         try {
             const token = await getAuthToken();
-            const response = await axios.put(`${API_URL}/doctor/appointments/${appointmentId}/status`, { status }, {
+            const payload = { status };
+            if (attachments && attachments.length > 0) {
+                payload.attachments = attachments;
+            }
+            const response = await axios.put(`${API_URL}/doctor/appointments/${appointmentId}/status`, payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
         } catch (error) {
             console.error("Update Status Error:", error);
+            throw error;
+        }
+    },
+
+    // Update doctor profile picture (Base64)
+    updateDoctorProfilePicture: async (base64Image) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.put(`${API_URL}/doctor/profile-picture`,
+                { profile_picture: base64Image },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Update Profile Picture Error:", error);
             throw error;
         }
     },
@@ -219,6 +238,32 @@ export const api = {
             return response.data;
         } catch (error) {
             console.error("Update Availability Error:", error);
+            throw error;
+        }
+    },
+
+    blockDate: async (date) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(`${API_URL}/doctor/availability/block`, { date }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Block Date Error:", error);
+            throw error;
+        }
+    },
+
+    unblockDate: async (date) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(`${API_URL}/doctor/availability/unblock`, { date }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Unblock Date Error:", error);
             throw error;
         }
     },

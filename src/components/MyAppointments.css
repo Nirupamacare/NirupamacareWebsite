@@ -71,11 +71,19 @@
     border-radius: 16px;
     padding: 20px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    /* Changed to column to stack attachments */
+    gap: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     border: 1px solid #f0f0f0;
     transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.apt-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .appointment-card:hover {
@@ -258,5 +266,173 @@
 
     .notification-content span {
         font-size: 0.9rem;
+    }
+}
+
+/* Attachments Styles */
+.apt-attachments-section {
+    margin-top: 16px;
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    border-radius: 0 0 16px 16px;
+    /* Rounded only at bottom */
+    width: 100%;
+}
+
+.no-attachments-msg {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 10px 0;
+}
+
+.apt-attachments-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: #4b5563;
+}
+
+.attachments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 16px;
+}
+
+.attachment-item {
+    position: relative;
+}
+
+.att-preview-box {
+    width: 100%;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    position: relative;
+    background: #f9fafb;
+}
+
+.att-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.att-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+}
+
+.att-preview-box:hover .att-overlay {
+    opacity: 1;
+}
+
+.att-preview-box:hover img {
+    transform: scale(1.05);
+}
+
+.att-pdf-box {
+    width: 100%;
+    height: 100px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fef2f2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    padding: 8px;
+}
+
+.att-label {
+    font-size: 0.7rem;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.att-download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #4b5563;
+    transition: all 0.2s;
+}
+
+.att-download-btn:hover {
+    background: #0ea5e9;
+    color: white;
+}
+
+/* Lightbox */
+.lightbox-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.lightbox-overlay img {
+    max-width: 95%;
+    max-height: 95vh;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }

@@ -19,7 +19,8 @@ const DoctorProfileEdit = () => {
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
-        profile_image_url: '', // Added field
+        profile_image_url: '', // Legacy field (kept for compatibility)
+        profile_picture: '', // New Base64 field
         display_name: '',
         specialty: '',
         experience_years: '',
@@ -41,16 +42,11 @@ const DoctorProfileEdit = () => {
                 console.log("Edit Page Loaded Profile:", profile);
 
                 if (profile) {
-                    // Logic to ensure image URL is absolute for localhost
-                    let validImgUrl = profile.profile_image_url || '';
-                    if (validImgUrl && validImgUrl.startsWith('/static')) {
-                        validImgUrl = `http://localhost:8000${validImgUrl}`;
-                    }
-
                     setFormData({
                         first_name: profile.first_name || '',
                         last_name: profile.last_name || '',
-                        profile_image_url: validImgUrl,
+                        profile_image_url: profile.profile_image_url || '',
+                        profile_picture: profile.profile_picture || '', // Load Base64 picture
                         display_name: profile.display_name || '',
                         specialty: profile.specialty || '',
                         experience_years: profile.experience_years || '',
@@ -87,6 +83,53 @@ const DoctorProfileEdit = () => {
         setAvailability(prev => ({ ...prev, [type]: !prev[type] }));
     };
 
+    // Handle profile picture upload (Base64)
+    const handleProfilePictureUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        // Validate file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image size must be less than 2MB');
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+
+            // Convert to Base64
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result;
+
+                try {
+                    // Upload to backend
+                    await api.updateDoctorProfilePicture(base64String);
+
+                    // Update local state
+                    setFormData(prev => ({ ...prev, profile_picture: base64String }));
+                    alert('Profile picture updated successfully!');
+                } catch (err) {
+                    console.error("Upload error:", err);
+                    alert("Failed to upload photo: " + (err.response?.data?.detail || err.message));
+                }
+            };
+
+            reader.readAsDataURL(file);
+        } catch (err) {
+            console.error("File read error:", err);
+            alert("Failed to process image");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -120,6 +163,13 @@ const DoctorProfileEdit = () => {
         );
     }
 
+    // Get display picture (prioritize Base64, fallback to URL or placeholder)
+    const getDisplayPicture = () => {
+        if (formData.profile_picture) return formData.profile_picture;
+        if (formData.profile_image_url) return formData.profile_image_url;
+        return `https://ui-avatars.com/api/?name=${formData.first_name}+${formData.last_name}&background=random`;
+    };
+
     return (
         <div id="doctor-setup-root">
             <nav className="doc-navbar">
@@ -145,16 +195,16 @@ const DoctorProfileEdit = () => {
                         <div className="form-section">
                             <h3 className="section-title">Personal Details</h3>
 
-                            {/* --- Profile Picture Upload --- */}
+                            {/* --- Profile Picture Upload (Base64) --- */}
                             <div className="profile-upload-section" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                                 <div
                                     className="avatar-preview"
                                     style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#eee', border: '2px solid #ddd', cursor: 'pointer' }}
-                                    onClick={() => formData.profile_image_url && setViewImage(true)}
+                                    onClick={() => formData.profile_picture && setViewImage(true)}
                                     title="Click to view full size"
                                 >
                                     <img
-                                        src={formData.profile_image_url || `https://ui-avatars.com/api/?name=${formData.first_name}+${formData.last_name}&background=random`}
+                                        src={getDisplayPicture()}
                                         alt="Profile"
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
@@ -165,42 +215,28 @@ const DoctorProfileEdit = () => {
                                         accept="image/*"
                                         id="edit-photo-upload"
                                         style={{ display: 'none' }}
-                                        onChange={async (e) => {
-                                            const file = e.target.files[0];
-                                            if (!file) return;
-                                            try {
-                                                setIsSubmitting(true);
-                                                const res = await api.uploadDoctorPhoto(file);
-
-                                                let fullUrl = res.url;
-                                                if (res.url.startsWith('/static')) {
-                                                    fullUrl = `http://localhost:8000${res.url}`;
-                                                }
-
-                                                setFormData(prev => ({ ...prev, profile_image_url: fullUrl }));
-                                            } catch (err) {
-                                                console.error("Upload error details:", err);
-                                                alert("Failed to upload photo: " + (err.response?.data?.detail || err.message));
-                                            } finally {
-                                                setIsSubmitting(false);
-                                            }
-                                        }}
+                                        onChange={handleProfilePictureUpload}
                                     />
                                     <button
                                         type="button"
                                         className="btn-upload"
                                         onClick={() => document.getElementById('edit-photo-upload').click()}
+                                        disabled={isSubmitting}
                                         style={{
                                             padding: '8px 16px',
                                             background: '#007bff',
                                             color: 'white',
                                             border: 'none',
                                             borderRadius: '6px',
-                                            cursor: 'pointer'
+                                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                                            opacity: isSubmitting ? 0.6 : 1
                                         }}
                                     >
                                         {isSubmitting ? 'Uploading...' : 'Upload Photo'}
                                     </button>
+                                    <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '8px' }}>
+                                        Max 2MB • JPG, PNG
+                                    </p>
                                 </div>
                             </div>
 
@@ -337,7 +373,7 @@ const DoctorProfileEdit = () => {
             </div>
 
             {/* Image Viewer Modal */}
-            {viewImage && formData.profile_image_url && (
+            {viewImage && (formData.profile_picture || formData.profile_image_url) && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
                     backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
@@ -346,7 +382,7 @@ const DoctorProfileEdit = () => {
                 }} onClick={() => setViewImage(false)}>
                     <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }} onClick={e => e.stopPropagation()}>
                         <img
-                            src={formData.profile_image_url}
+                            src={getDisplayPicture()}
                             alt="Full Size Profile"
                             style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', boxShadow: '0 4px 30px rgba(0,0,0,0.5)', border: '2px solid white' }}
                         />
