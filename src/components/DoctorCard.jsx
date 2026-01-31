@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import './Doctors.css'; // Shared styles
 
 const DoctorCard = ({ doctor }) => {
     const navigate = useNavigate();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    // Check authentication status
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setIsAuthenticated(!!user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     // Map backend snake_case to UI fields
     const name = doctor.display_name || doctor.name || "Unknown Doctor";
@@ -21,7 +32,8 @@ const DoctorCard = ({ doctor }) => {
     const slots = doctor.availabilities || doctor.availableSlots || [];
     const verified = true; // Placeholder
 
-    const imageUrl = doctor.profile_image_url || `https://ui-avatars.com/api/?name=${name}&background=random`;
+    // Prioritize Base64 profile_picture, fallback to URL, then placeholder
+    const imageUrl = doctor.profile_picture || doctor.profile_image_url || `https://ui-avatars.com/api/?name=${name}&background=random`;
 
     return (
         <div className="doctor-card">
@@ -70,9 +82,16 @@ const DoctorCard = ({ doctor }) => {
                 >View Profile</button>
                 <button
                     className="btn-book-appointment"
-                    onClick={() => navigate(`/book-appointment/${doctor._id || doctor.id}`)}
+                    onClick={() => {
+                        if (isAuthenticated) {
+                            navigate(`/book-appointment/${doctor._id || doctor.id}`);
+                        } else {
+                            navigate('/login');
+                        }
+                    }}
+                    title={!isAuthenticated ? 'Login required to book appointment' : 'Book an appointment'}
                 >
-                    Book Appointment
+                    {isAuthenticated ? 'Book Appointment' : '🔒 Login to Book'}
                 </button>
             </div>
         </div>

@@ -5,7 +5,7 @@ import './HelpCenter.css';
 
 const HelpCenter = () => {
   const navigate = useNavigate();
-  
+
   // --- Navbar State ---
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -41,7 +41,7 @@ const HelpCenter = () => {
     }
   ];
 
-  const filteredFaqs = faqs.filter(faq => 
+  const filteredFaqs = faqs.filter(faq =>
     faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
     faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -49,7 +49,7 @@ const HelpCenter = () => {
   // --- CHATBOT LOGIC ---
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi there! 👋 I'm the Nirupama Assistant. How can I help you today?", sender: 'bot' }
+    { id: 1, text: "Hi there! 👋 I'm the Nirupama. How can I help you today?", sender: 'bot' }
   ]);
   const [inputMsg, setInputMsg] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -96,12 +96,12 @@ const HelpCenter = () => {
   return (
     // STRICT ISOLATION WRAPPER
     <div id="help-page-root">
-      
+
       {/* --- Navbar (Scoped Classes) --- */}
       <nav className="help-navbar">
         <div className="help-nav-container">
           <div className="help-logo">
-             <img src="nirupama1.png" className="help-logo-img" alt="Logo" />   
+            <img src="nirupama1.png" className="help-logo-img" alt="Logo" />
           </div>
           <div className="help-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <div className={isMenuOpen ? "help-bar open" : "help-bar"}></div>
@@ -121,89 +121,89 @@ const HelpCenter = () => {
       <div className="help-hero">
         <div className="hero-overlay"></div>
         <div className="hero-content">
-            <h1 className="fade-in-up">How can we help you?</h1>
-            <p className="fade-in-up delay-1">Search our knowledge base or get in touch.</p>
-            <div className="search-wrapper fade-in-up delay-2">
-                <Search className="search-icon" size={20} />
-                <input 
-                    type="text" 
-                    placeholder="Search for answers (e.g., 'OTP', 'Booking')..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
+          <h1 className="fade-in-up">How can we help you?</h1>
+          <p className="fade-in-up delay-1">Search our knowledge base or get in touch.</p>
+          <div className="search-wrapper fade-in-up delay-2">
+            <Search className="search-icon" size={20} />
+            <input
+              type="text"
+              placeholder="Search for answers (e.g., 'OTP', 'Booking')..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
       <div className="help-body">
         {/* FAQ Section */}
         <div className="faq-section fade-in-up delay-3">
-            <div className="section-header">
-                <HelpCircle size={24} className="section-icon"/>
-                <h3>{searchQuery ? `Search Results (${filteredFaqs.length})` : 'Frequently Asked Questions'}</h3>
-            </div>
-            <div className="faq-list">
-                {filteredFaqs.length > 0 ? (
-                    filteredFaqs.map((faq) => (
-                    <div 
-                        key={faq.id} 
-                        className={`faq-item ${activeId === faq.id ? 'active' : ''}`}
-                        onClick={() => setActiveId(activeId === faq.id ? null : faq.id)}
-                    >
-                        <div className="faq-question">
-                            <span>{faq.question}</span>
-                            {activeId === faq.id ? <ChevronUp size={20} className="chevron"/> : <ChevronDown size={20} className="chevron"/>}
-                        </div>
-                        <div className={`faq-answer ${activeId === faq.id ? 'show' : ''}`}>
-                            <p>{faq.answer}</p>
-                        </div>
-                    </div>
-                    ))
-                ) : (
-                    <div className="no-results">
-                        <p>No results found for "{searchQuery}"</p>
-                    </div>
-                )}
-            </div>
+          <div className="section-header">
+            <HelpCircle size={24} className="section-icon" />
+            <h3>{searchQuery ? `Search Results (${filteredFaqs.length})` : 'Frequently Asked Questions'}</h3>
+          </div>
+          <div className="faq-list">
+            {filteredFaqs.length > 0 ? (
+              filteredFaqs.map((faq) => (
+                <div
+                  key={faq.id}
+                  className={`faq-item ${activeId === faq.id ? 'active' : ''}`}
+                  onClick={() => setActiveId(activeId === faq.id ? null : faq.id)}
+                >
+                  <div className="faq-question">
+                    <span>{faq.question}</span>
+                    {activeId === faq.id ? <ChevronUp size={20} className="chevron" /> : <ChevronDown size={20} className="chevron" />}
+                  </div>
+                  <div className={`faq-answer ${activeId === faq.id ? 'show' : ''}`}>
+                    <p>{faq.answer}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="no-results">
+                <p>No results found for "{searchQuery}"</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Contact Support Section */}
         <div className="support-section fade-in-up delay-4">
-            <div className="support-header">
-                <h3>Still need help?</h3>
-                <p>Our support team is available 24/7 to assist you.</p>
+          <div className="support-header">
+            <h3>Still need help?</h3>
+            <p>Our support team is available 24/7 to assist you.</p>
+          </div>
+          <div className="support-grid">
+            <div className="support-card whatsapp" onClick={() => window.open('https://wa.me/1234567890')}>
+              <div className="icon-circle"><MessageCircle size={24} /></div>
+              <div className="card-info">
+                <strong>WhatsApp</strong>
+                <span>Chat instantly</span>
+              </div>
             </div>
-            <div className="support-grid">
-                <div className="support-card whatsapp" onClick={() => window.open('https://wa.me/1234567890')}>
-                    <div className="icon-circle"><MessageCircle size={24} /></div>
-                    <div className="card-info">
-                        <strong>WhatsApp</strong>
-                        <span>Chat instantly</span>
-                    </div>
-                </div>
-                <div className="support-card email" onClick={() => window.location.href = 'mailto:support@nirupama.care'}>
-                    <div className="icon-circle"><Mail size={24} /></div>
-                    <div className="card-info">
-                        <strong>Email Us</strong>
-                        <span>Response in 2h</span>
-                    </div>
-                </div>
-                <div className="support-card phone" onClick={() => window.location.href = 'tel:+1234567890'}>
-                    <div className="icon-circle"><Phone size={24} /></div>
-                    <div className="card-info">
-                        <strong>Call Now</strong>
-                        <span>Direct helpline</span>
-                    </div>
-                </div>
+            <div className="support-card email" onClick={() => window.location.href = 'mailto:support@nirupama.care'}>
+              <div className="icon-circle"><Mail size={24} /></div>
+              <div className="card-info">
+                <strong>Email Us</strong>
+                <span>Response in 2h</span>
+              </div>
             </div>
+            <div className="support-card phone" onClick={() => window.location.href = 'tel:+1234567890'}>
+              <div className="icon-circle"><Phone size={24} /></div>
+              <div className="card-info">
+                <strong>Call Now</strong>
+                <span>Direct helpline</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* --- CHATBOT WIDGET --- */}
       <div className="chatbot-wrapper">
         {/* Toggle Button */}
-        <button 
-          className={`chat-toggle-btn ${isChatOpen ? 'hide' : ''}`} 
+        <button
+          className={`chat-toggle-btn ${isChatOpen ? 'hide' : ''}`}
           onClick={() => setIsChatOpen(true)}
         >
           <MessageSquare size={24} />
@@ -215,7 +215,7 @@ const HelpCenter = () => {
           <div className="chat-header">
             <div className="chat-header-info">
               <div className="status-dot"></div>
-              <span>Nirupama Assistant</span>
+              <span>Nirupama</span>
             </div>
             <button className="close-chat" onClick={() => setIsChatOpen(false)}>
               <X size={20} />
@@ -239,9 +239,9 @@ const HelpCenter = () => {
           </div>
 
           <form className="chat-input-area" onSubmit={handleSendMessage}>
-            <input 
-              type="text" 
-              placeholder="Type a question..." 
+            <input
+              type="text"
+              placeholder="Type a question..."
               value={inputMsg}
               onChange={(e) => setInputMsg(e.target.value)}
             />

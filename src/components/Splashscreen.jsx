@@ -32,7 +32,7 @@ const Splashscreen = () => {
         <div className="loading-bar-container">
           <div className="loading-bar"></div>
         </div>
-        <p className="splash-tagline">Care beyond expectations</p>
+        <p className="splash-tagline">Affordable healthcare at your fingertips</p>
       </div>
     </div>
   );

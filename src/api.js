@@ -7,8 +7,9 @@ import {
     signOut
 } from "firebase/auth";
 
-const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
+//const API_URL = "https://api-48aa.vercel.app/v1";
 //const API_URL = "http://localhost:8000/v1";
+const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
 
 // --- Helper: Get Token robustly ---
 const getAuthToken = () => {
@@ -71,6 +72,11 @@ export const api = {
 
     logout: async () => {
         await signOut(auth);
+        // Clear all stored user data
+        localStorage.removeItem('token');
+        localStorage.removeItem('mongo_user_id');
+        localStorage.removeItem('user_role');
+        localStorage.removeItem('user_name');
     },
 
     // Sync authenticated user with backend (for Login.jsx)
@@ -121,8 +127,8 @@ export const api = {
 
             const response = await axios.post(`${API_URL}/doctor/upload-photo`, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`
-                    // Removed manual Content-Type: multipart/form-data to let Axios set it with boundary
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": undefined, // Explicitly undefined to force browser to set boundary
                 }
             });
             return response.data; // { url: "..." }
@@ -171,15 +177,34 @@ export const api = {
         }
     },
 
-    updateAppointmentStatus: async (appointmentId, status) => {
+    updateAppointmentStatus: async (appointmentId, status, attachments = []) => {
         try {
             const token = await getAuthToken();
-            const response = await axios.put(`${API_URL}/doctor/appointments/${appointmentId}/status`, { status }, {
+            const payload = { status };
+            if (attachments && attachments.length > 0) {
+                payload.attachments = attachments;
+            }
+            const response = await axios.put(`${API_URL}/doctor/appointments/${appointmentId}/status`, payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
         } catch (error) {
             console.error("Update Status Error:", error);
+            throw error;
+        }
+    },
+
+    // Update doctor profile picture (Base64)
+    updateDoctorProfilePicture: async (base64Image) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.put(`${API_URL}/doctor/profile-picture`,
+                { profile_picture: base64Image },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Update Profile Picture Error:", error);
             throw error;
         }
     },
@@ -217,6 +242,32 @@ export const api = {
         }
     },
 
+    blockDate: async (date) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(`${API_URL}/doctor/availability/block`, { date }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Block Date Error:", error);
+            throw error;
+        }
+    },
+
+    unblockDate: async (date) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(`${API_URL}/doctor/availability/unblock`, { date }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Unblock Date Error:", error);
+            throw error;
+        }
+    },
+
     // ================================
     // 4. SEARCH DOCTORS (Public)
     // ================================
@@ -231,16 +282,19 @@ export const api = {
             const queryString = params.toString();
             const url = queryString ? `${API_URL}/doctor/list?${queryString}` : `${API_URL}/doctor/list`;
 
-            // Try to get token robustly
+            // Try to get token, but don't fail if not authenticated
             let headers = {};
             try {
                 const token = await getAuthToken();
                 headers = { Authorization: `Bearer ${token}` };
+                console.log("Fetching doctors with authentication");
             } catch (e) {
-                // Not authenticated or error
+                // Not authenticated - this is OK, make request without auth
+                console.log("Fetching doctors without authentication (public access)");
             }
 
             const response = await axios.get(url, { headers });
+            console.log(`Found ${response.data?.length || 0} doctors`);
             return response.data; // Returns array of DoctorPublic
         } catch (error) {
             console.error("Search Doctors Error:", {
@@ -248,7 +302,8 @@ export const api = {
                 data: error.response?.data,
                 message: error.message
             });
-            // If 401, it means we needed a token but didn't have one (or it expired)
+            // Only return empty array if the actual API call failed
+            // This could be network error, server error, etc.
             return [];
         }
     },
@@ -260,7 +315,10 @@ export const api = {
             try {
                 const token = await getAuthToken();
                 headers = { Authorization: `Bearer ${token}` };
-            } catch (e) { }
+                console.log(`Fetching doctor ${id} with authentication`);
+            } catch (e) {
+                console.log(`Fetching doctor ${id} without authentication (public access)`);
+            }
 
             const response = await axios.get(`${API_URL}/doctor/${id}`, { headers });
             return response.data;

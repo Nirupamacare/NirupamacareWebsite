@@ -71,11 +71,19 @@
     border-radius: 16px;
     padding: 20px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    /* Changed to column to stack attachments */
+    gap: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     border: 1px solid #f0f0f0;
     transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.apt-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .appointment-card:hover {
@@ -177,6 +185,65 @@
     color: #ef6c00;
 }
 
+/* Notification Banner */
+.notification-banner {
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideDown 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notification-banner.success {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 1px solid #81c784;
+    color: #2e7d32;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.notification-content span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #2e7d32;
+    cursor: pointer;
+    padding: 0 8px;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Mobile Responsive */
 @media (max-width: 600px) {
     .appointment-card {
@@ -192,67 +259,180 @@
         border-top: 1px solid #f0f0f0;
         padding-top: 10px;
     }
+
+    .notification-banner {
+        padding: 12px 16px;
+    }
+
+    .notification-content span {
+        font-size: 0.9rem;
+    }
 }
 
-/* Add these styles to your existing MyAppointments.css */
-
-/* Video Call Join Button */
-.btn-join-call {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
-}
-
-.btn-join-call:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-}
-
-.btn-join-call:active {
-  transform: translateY(0);
-}
-
-.btn-join-call svg {
-  animation: pulse-video 2s ease-in-out infinite;
-}
-
-@keyframes pulse-video {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* Status Badge Spacing */
-.apt-status {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .apt-status {
-    align-items: stretch;
-  }
-
-  .btn-join-call {
+/* Attachments Styles */
+.apt-attachments-section {
+    margin-top: 16px;
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    border-radius: 0 0 16px 16px;
+    /* Rounded only at bottom */
     width: 100%;
+}
+
+.no-attachments-msg {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 10px 0;
+}
+
+.apt-attachments-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: #4b5563;
+}
+
+.attachments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 16px;
+}
+
+.attachment-item {
+    position: relative;
+}
+
+.att-preview-box {
+    width: 100%;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    position: relative;
+    background: #f9fafb;
+}
+
+.att-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.att-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
     justify-content: center;
-  }
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+}
+
+.att-preview-box:hover .att-overlay {
+    opacity: 1;
+}
+
+.att-preview-box:hover img {
+    transform: scale(1.05);
+}
+
+.att-pdf-box {
+    width: 100%;
+    height: 100px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fef2f2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    padding: 8px;
+}
+
+.att-label {
+    font-size: 0.7rem;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.att-download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #4b5563;
+    transition: all 0.2s;
+}
+
+.att-download-btn:hover {
+    background: #0ea5e9;
+    color: white;
+}
+
+/* Lightbox */
+.lightbox-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.lightbox-overlay img {
+    max-width: 95%;
+    max-height: 95vh;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }

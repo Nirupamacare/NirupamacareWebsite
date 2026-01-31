@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { api } from '../api';
 import './Doctors.css';
 import { MapPin, Clock, Star, Award, GraduationCap, Globe } from 'lucide-react';
@@ -9,6 +11,15 @@ const DoctorProfileView = () => {
     const navigate = useNavigate();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    // Check authentication status
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setIsAuthenticated(!!user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         const fetchDoc = async () => {
@@ -19,7 +30,8 @@ const DoctorProfileView = () => {
                         ...data,
                         id: data._id || data.id,
                         name: data.display_name || data.name || "Doctor",
-                        profile_image_url: data.profile_image_url || "", // Added mapping
+                        profile_image_url: data.profile_image_url || "",
+                        profile_picture: data.profile_picture || "", // Add Base64 field
                         specialization: data.specialty || data.specialization || "General",
                         clinicName: data.clinic_name || "Clinic Info Not Available",
                         location: data.clinic_address || data.location || data.city || "Location Not Available",
@@ -53,7 +65,7 @@ const DoctorProfileView = () => {
             <div className="profile-card-large">
                 <div className="profile-top">
                     <img
-                        src={doctor.profile_image_url || `https://ui-avatars.com/api/?name=${doctor.name}&background=random&size=128`}
+                        src={doctor.profile_picture || doctor.profile_image_url || `https://ui-avatars.com/api/?name=${doctor.name}&background=random&size=128`}
                         alt={doctor.name}
                         className="profile-avatar-large"
                         style={{ objectFit: 'cover' }}
@@ -120,9 +132,16 @@ const DoctorProfileView = () => {
                 <div className="profile-actions-sticky">
                     <button
                         className="btn-book-large"
-                        onClick={() => navigate(`/book-appointment/${doctor.id}`)}
+                        onClick={() => {
+                            if (isAuthenticated) {
+                                navigate(`/book-appointment/${doctor.id}`);
+                            } else {
+                                navigate('/login');
+                            }
+                        }}
+                        title={!isAuthenticated ? 'Login required to book appointment' : 'Book an appointment'}
                     >
-                        Book Appointment
+                        {isAuthenticated ? 'Book Appointment' : '🔒 Login to Book'}
                     </button>
                 </div>
             </div>

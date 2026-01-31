@@ -19,7 +19,7 @@ import DoctorProfileEdit from './components/DoctorProfileEdit';
 import UserProfileView from "./components/UserProfileView";
 import AppointmentBooking from "./components/AppointmentBooking";
 import MyAppointments from "./components/MyAppointments";
-import PatientVideoCall from "./components/PatientVideoCall";
+import MedicalRecords from "./components/MedicalRecords";
 import "./App.css";
 import DoctorVideoCall from "./components/DoctorVideoCall";
 import VideoCallRoom from "./components/VideoCallRoom";
@@ -44,6 +44,7 @@ function App() {
             <Route path="/doctor-profile/:doctorId" element={<DoctorProfileView />} />
             <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
             <Route path="/my-appointments" element={<MyAppointments />} />
+            <Route path="/medical-records" element={<MedicalRecords />} />
             <Route path="/intro" element={<Intro />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/about" element={<About />} />
