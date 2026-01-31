@@ -8,13 +8,12 @@ const MyAppointments = () => {
     const navigate = useNavigate();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [joiningCall, setJoiningCall] = useState(null); // Track which appointment is joining
 
     useEffect(() => {
         const fetch = async () => {
             try {
                 const data = await api.getPatientAppointments();
-                // Sort by date (newest first)? Or server sorts?
-                // Let's reverse to show newest first if server returns append
                 setAppointments(data.reverse());
             } catch (err) {
                 console.error(err);
@@ -24,6 +23,47 @@ const MyAppointments = () => {
         };
         fetch();
     }, []);
+
+    const handleJoinCall = async (appointment) => {
+        try {
+            setJoiningCall(appointment.id);
+            
+            // Check if this appointment already has a call_id stored
+            if (appointment.call_id) {
+                console.log('Using existing call_id:', appointment.call_id);
+                navigate(`/video-call/${appointment.call_id}`);
+                return;
+            }
+
+            // Create new call request
+            console.log('Creating new call request for doctor:', appointment.doctor_id);
+            
+            if (!appointment.doctor_id) {
+                throw new Error('Doctor ID not found in appointment');
+            }
+
+            const callRequest = await api.requestCall({
+                doctor_id: appointment.doctor_id
+            });
+            
+            console.log('Call request created:', callRequest);
+
+            // Navigate with the new call_id
+            // Use 'id' or '_id' depending on what the backend returns
+            const callId = callRequest.id || callRequest._id;
+            if (!callId) {
+                throw new Error('Call ID not returned from server');
+            }
+
+            navigate(`/video-call/${callId}`);
+            
+        } catch (error) {
+            console.error('Failed to start call:', error);
+            alert(`Failed to start video call: ${error.message || 'Unknown error'}`);
+        } finally {
+            setJoiningCall(null);
+        }
+    };
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -39,6 +79,10 @@ const MyAppointments = () => {
             case 'Cancelled': return <XCircle size={16} />;
             default: return <Clock size={16} />;
         }
+    };
+
+    const isCallAvailable = (appointment) => {
+        return appointment.type?.includes('Online') && appointment.status === 'Confirmed';
     };
 
     return (
@@ -68,7 +112,7 @@ const MyAppointments = () => {
                                 <div className="apt-info">
                                     <div className="apt-header">
                                         <h3 className="apt-title">{apt.type === 'Online Consult' ? 'Video Consultation' : 'Clinic Visit'}</h3>
-                                        <span className="apt-id">#{apt.id.slice(-6)}</span>
+                                        <span className="apt-id">#{apt.id?.slice(-6) || 'N/A'}</span>
                                     </div>
 
                                     <div className="apt-meta">
@@ -86,6 +130,13 @@ const MyAppointments = () => {
                                         {apt.type && apt.type.includes('Online') ? <Video size={14} /> : <MapPin size={14} />}
                                         <span>{apt.type}</span>
                                     </div>
+
+                                    {/* Debug info - remove in production */}
+                                    {apt.doctor_id && (
+                                        <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '4px' }}>
+                                            Doctor ID: {apt.doctor_id}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -95,7 +146,27 @@ const MyAppointments = () => {
                                         <span className="status-dot"></span>
                                         {apt.status}
                                     </span>
-                                    {/* Optional: Add payment status or link to prescription here later */}
+                                    
+                                    {isCallAvailable(apt) && (
+                                        <button 
+                                            className="btn-join-call"
+                                            onClick={() => handleJoinCall(apt)}
+                                            disabled={joiningCall === apt.id}
+                                            title="Join Video Call"
+                                        >
+                                            {joiningCall === apt.id ? (
+                                                <>
+                                                    {/* <Loader size={16} className="spinner" /> */}
+                                                    <span>Connecting...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Video size={16} />
+                                                    <span>Join Call</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

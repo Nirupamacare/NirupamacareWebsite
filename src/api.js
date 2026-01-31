@@ -7,7 +7,7 @@ import {
     signOut
 } from "firebase/auth";
 
-const API_URL = "https://api-48aa.vercel.app/v1";
+const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
 //const API_URL = "http://localhost:8000/v1";
 
 // --- Helper: Get Token robustly ---
@@ -345,5 +345,91 @@ export const api = {
             console.error("Get Patient Appointments Error:", error);
             throw error;
         }
+    },
+
+    async getVideoCallToken(callId,sdk='prebuilt') {
+    try {
+
+
+        const url = new URL(`${API_URL}/call/${callId}/token`);
+      url.searchParams.append('sdk', sdk);
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authentication header if needed
+          'Authorization': `Bearer ${await getAuthToken()}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to get video call token: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching video call token:', error);
+      throw error;
     }
+  },
+
+  requestCall: async (callData) => {
+    try {
+        const token = await getAuthToken();
+        const response = await axios.post(`${API_URL}/call/request`, callData, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Request Call Error:", error);
+        throw error;
+    }
+},
+
+approveCall: async (callId, action) => {
+    try {
+        const token = await getAuthToken();
+        const response = await axios.post(
+            `${API_URL}/call/${callId}/approve`,
+            { action }, // 'approve' or 'reject'
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Approve Call Error:", error);
+        throw error;
+    }
+},
+
+ getDoctorPendingCalls: async () => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.get(`${API_URL}/call/incoming`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Get Incoming Calls Error:", error);
+            return [];
+        }
+    },
+    recordCallEvent: async (callId, event) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(
+                `${API_URL}/call/${callId}/events`,
+                { 
+                    event,
+                    at: new Date().toISOString()
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Record Call Event Error:", error);
+            throw error;
+        }
+    },
 };

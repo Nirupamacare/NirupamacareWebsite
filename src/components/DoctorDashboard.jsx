@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Calendar, Clock, Users, Video, MapPin,
+  Calendar as CalendarIcon, Clock, Users, Video, MapPin,
   CheckCircle, XCircle, Plus, Trash2, LogOut,
-  Mic, MicOff, VideoOff, PhoneOff
+  Mic, MicOff, VideoOff, PhoneOff, BarChart3, Upload
 } from 'lucide-react';
+import RevenueAnalytics from './RevenueAnalytics';
+import AttachmentUploadModal from './AttachmentUploadModal';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
+import Calendar from 'react-calendar'; // Import Calendar
+import 'react-calendar/dist/Calendar.css'; // Import Calendar CSS
 import { api } from '../api';
 import { auth } from '../firebase';
 import './DoctorDashboard.css';
@@ -23,11 +27,17 @@ const DoctorDashboard = () => {
   const [doctorProfile, setDoctorProfile] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [mySlots, setMySlots] = useState([]);
+  const [blockedDates, setBlockedDates] = useState([]); // State for blocked dates
 
   // Video Call State
   const [activeVideoCall, setActiveVideoCall] = useState(null);
   const [micOn, setMicOn] = useState(true);
   const [cameraOn, setCameraOn] = useState(true);
+
+  // Upload Modal State
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedAppointmentForUpload, setSelectedAppointmentForUpload] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({ total: 0, today: 0, pending: 0 });
@@ -140,7 +150,10 @@ const DoctorDashboard = () => {
           })
         ]);
 
-        if (profileData) setDoctorProfile(profileData);
+        if (profileData) {
+          setDoctorProfile(profileData);
+          setBlockedDates(profileData.blocked_dates || []);
+        }
         setAppointments(appointmentsData || []);
 
         // Backend returns snake_case, so we use it directly here
@@ -179,6 +192,13 @@ const DoctorDashboard = () => {
   };
 
   const handleStatusUpdate = async (aptId, newStatus) => {
+    // If marking as completed, open upload modal instead of direct API call
+    if (newStatus === 'Completed') {
+      const apt = appointments.find(a => a.id === aptId);
+      handleOpenUploadModal(apt);
+      return;
+    }
+
     // Optimistic update
     const previous = [...appointments];
     setAppointments(appointments.map(a =>
@@ -191,6 +211,34 @@ const DoctorDashboard = () => {
       console.error("Update failed", error);
       alert("Failed to update status");
       setAppointments(previous); // Revert
+    }
+  };
+
+  const handleOpenUploadModal = (apt) => {
+    setSelectedAppointmentForUpload(apt);
+    setShowUploadModal(true);
+  };
+
+  const handleUploadSubmit = async (attachments) => {
+    if (!selectedAppointmentForUpload) return;
+
+    setIsUploading(true);
+    try {
+      // API call to update status to "Completed" AND upload attachments
+      await api.updateAppointmentStatus(selectedAppointmentForUpload.id, "Completed", attachments);
+
+      // Update UI
+      setAppointments(appointments.map(a =>
+        (a.id === selectedAppointmentForUpload.id) ? { ...a, status: 'Completed', attachments: attachments } : a
+      ));
+
+      setShowUploadModal(false);
+      setSelectedAppointmentForUpload(null);
+    } catch (error) {
+      console.error("Failed to complete appointment", error);
+      alert("Failed to upload documents. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -240,8 +288,55 @@ const DoctorDashboard = () => {
 
   const endVideoCall = () => {
     setActiveVideoCall(null);
-    // Stay on video tab (return to lobby) or go back to appointments?
-    // Staying on video tab (Lobby) is usually better UX
+    // Stay on video tab (Lobby) is usually better UX
+  };
+
+  // --- Calendar Handlers ---
+  const handleDateClick = async (value) => {
+    // value is a Date object. Convert to YYYY-MM-DD in local time
+    // Use this trick to get YYYY-MM-DD correctly for local time
+    const offset = value.getTimezoneOffset();
+    const date = new Date(value.getTime() - (offset * 60 * 1000));
+    const dateStr = date.toISOString().split('T')[0];
+
+    // Check if already blocked
+    const isBlocked = blockedDates.includes(dateStr);
+
+    // Optimistic Update
+    const prevBlocked = [...blockedDates];
+    if (isBlocked) {
+      setBlockedDates(prevBlocked.filter(d => d !== dateStr));
+    } else {
+      setBlockedDates([...prevBlocked, dateStr]);
+    }
+
+    try {
+      if (isBlocked) {
+        // Unblock
+        await api.unblockDate(dateStr);
+      } else {
+        // Block
+        await api.blockDate(dateStr);
+      }
+    } catch (error) {
+      console.error("Failed to update blocked date", error);
+      const msg = error.response?.data?.detail || "Failed to update availability. backend server might be down.";
+      alert(msg);
+      setBlockedDates(prevBlocked); // Revert
+    }
+  };
+
+  const tileClassName = ({ date, view }) => {
+    if (view === 'month') {
+      const offset = date.getTimezoneOffset();
+      const d = new Date(date.getTime() - (offset * 60 * 1000));
+      const dateStr = d.toISOString().split('T')[0];
+
+      if (blockedDates.includes(dateStr)) {
+        return 'blocked-date';
+      }
+    }
+    return null;
   };
 
   if (loading) return <div className="loading-screen">Loading Dashboard...</div>;
@@ -263,8 +358,8 @@ const DoctorDashboard = () => {
               <span className="dash-username">{doctorProfile?.first_name || doctorProfile?.display_name?.split(' ')[0] || 'Doctor'}</span>
             </div>
             <div className="dash-avatar">
-              {doctorProfile?.profile_image_url ? (
-                <img src={doctorProfile.profile_image_url} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+              {(doctorProfile?.profile_picture || doctorProfile?.profile_image_url) ? (
+                <img src={doctorProfile.profile_picture || doctorProfile.profile_image_url} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
                 doctorProfile?.first_name ? doctorProfile.first_name[0] : (doctorProfile?.display_name ? doctorProfile.display_name[0] : 'D')
               )}
@@ -291,8 +386,8 @@ const DoctorDashboard = () => {
         <aside className="dash-sidebar">
           <div className="sidebar-profile">
             <div className="avatar-circle" onClick={() => navigate('/doctor-edit')} style={{ cursor: 'pointer', position: 'relative' }}>
-              {doctorProfile?.profile_image_url ? (
-                <img src={doctorProfile.profile_image_url} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+              {(doctorProfile?.profile_picture || doctorProfile?.profile_image_url) ? (
+                <img src={doctorProfile.profile_picture || doctorProfile.profile_image_url} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
                 doctorProfile?.display_name ? doctorProfile.display_name[0] : 'D'
               )}
@@ -315,7 +410,7 @@ const DoctorDashboard = () => {
               className={activeTab === 'appointments' ? 'active' : ''}
               onClick={() => setActiveTab('appointments')}
             >
-              <Calendar size={20} /> Appointments
+              <CalendarIcon size={20} /> Appointments
             </button>
             <button
               className={activeTab === 'schedule' ? 'active' : ''}
@@ -328,6 +423,12 @@ const DoctorDashboard = () => {
               onClick={() => setActiveTab('video')}
             >
               <Video size={20} /> Video Conference
+            </button>
+            <button
+              className={activeTab === 'analytics' ? 'active' : ''}
+              onClick={() => setActiveTab('analytics')}
+            >
+              <BarChart3 size={20} /> Analytics
             </button>
           </nav>
         </aside>
@@ -345,7 +446,7 @@ const DoctorDashboard = () => {
                 </div>
               </div>
               <div className="stat-card">
-                <div className="stat-icon bg-green"><Calendar size={24} /></div>
+                <div className="stat-icon bg-green"><CalendarIcon size={24} /></div>
                 <div>
                   <h4>Appointments Today</h4>
                   <p>{stats.today}</p>
@@ -398,10 +499,25 @@ const DoctorDashboard = () => {
                           </td>
                           <td>
                             <div className="action-buttons">
-                              {apt.status === 'Pending' ? (
+                              {apt.status === 'Pending' || apt.status === 'Confirmed' ? (
                                 <>
-                                  <button className="btn-icon accept" title="Accept" onClick={() => handleStatusUpdate(apt.id, 'Confirmed')}><CheckCircle size={18} /></button>
-                                  <button className="btn-icon decline" title="Decline" onClick={() => handleStatusUpdate(apt.id, 'Cancelled')}><XCircle size={18} /></button>
+                                  {apt.status === 'Pending' && (
+                                    <>
+                                      <button className="btn-icon accept" title="Accept" onClick={() => handleStatusUpdate(apt.id, 'Confirmed')}><CheckCircle size={18} /></button>
+                                      <button className="btn-icon decline" title="Decline" onClick={() => handleStatusUpdate(apt.id, 'Cancelled')}><XCircle size={18} /></button>
+                                    </>
+                                  )}
+
+                                  {apt.status === 'Confirmed' && (
+                                    <button
+                                      className="btn-icon complete"
+                                      title="Complete & Upload"
+                                      onClick={() => handleStatusUpdate(apt.id, 'Completed')}
+                                      style={{ color: '#10b981' }}
+                                    >
+                                      <Upload size={18} />
+                                    </button>
+                                  )}
                                 </>
                               ) : (
                                 <span style={{ color: '#aaa', fontSize: '0.85rem' }}>Completed</span>
@@ -428,6 +544,19 @@ const DoctorDashboard = () => {
             </div>
           )}
 
+          {/* Upload Modal */}
+          <AttachmentUploadModal
+            isOpen={showUploadModal}
+            onClose={() => setShowUploadModal(false)}
+            onSubmit={handleUploadSubmit}
+            isSubmitting={isUploading}
+          />
+
+          {/* Analytics View */}
+          {activeTab === 'analytics' && (
+            <RevenueAnalytics bookingHistory={appointments} doctorProfile={doctorProfile} />
+          )}
+
           {/* Availability Scheduler View */}
           {activeTab === 'schedule' && (
             <div className="content-card">
@@ -435,6 +564,39 @@ const DoctorDashboard = () => {
                 <h2>Manage Availability</h2>
                 <p className="card-sub">Set the times you are free so patients can book you.</p>
               </div>
+
+              {/* Blocked Dates Calendar */}
+              <div className="blocked-dates-section">
+                <h3 style={{ fontSize: '1.1rem', color: '#1f2937', marginBottom: '12px' }}>📅 Block Cancelled Dates</h3>
+                <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '16px' }}>
+                  Select dates on the calendar to block them. Patients will not be able to book appointments on these days.
+                </p>
+                <div className="calendar-wrapper">
+                  <Calendar
+                    onClickDay={handleDateClick}
+                    tileClassName={tileClassName}
+                    minDate={new Date()} // Prevent blocking past dates
+                  />
+
+                  {/* Legend */}
+                  <div className="calendar-legend">
+                    <div className="legend-item">
+                      <div className="legend-dot available"></div>
+                      <span>Available</span>
+                    </div>
+                    <div className="legend-item">
+                      <div className="legend-dot blocked"></div>
+                      <span>Blocked</span>
+                    </div>
+                    <div className="legend-item">
+                      <div className="legend-dot today"></div>
+                      <span>Today</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ height: '1px', background: '#e5e7eb', margin: '24px 0' }}></div>
 
               {/* Quick Schedule Generator */}
               <div className="quick-schedule-box">
@@ -522,124 +684,125 @@ const DoctorDashboard = () => {
                 )}
               </div>
             </div>
-          )}
+          )
+          }
 
           {/* Video Conference View (Lobby & Active) */}
-          {activeTab === 'video' && (
-            activeVideoCall ? (
-              // --- ACTIVE CALL UI ---
-              <div className="content-card video-conference-container">
-                <div className="video-header">
-                  <h2>Live Consultation</h2>
-                  <div className="video-meta">
-                    <span className="patient-name">Patient: {activeVideoCall.patient_name}</span>
-                    <span className="live-badge">● LIVE</span>
-                  </div>
-                </div>
-
-                <div className="video-main-area">
-                  {/* Main Video (Patient) */}
-                  <div className="video-feed patient-feed">
-                    <div className="video-placeholder">
-                      <Users size={64} />
-                      <p>Patient Feed (Mock)</p>
+          {
+            activeTab === 'video' && (
+              activeVideoCall ? (
+                // --- ACTIVE CALL UI ---
+                <div className="content-card video-conference-container">
+                  <div className="video-header">
+                    <h2>Live Consultation</h2>
+                    <div className="video-meta">
+                      <span className="patient-name">Patient: {activeVideoCall.patient_name}</span>
+                      <span className="live-badge">● LIVE</span>
                     </div>
                   </div>
 
-                  {/* Picture-in-Picture (Doctor/Self) */}
-                  <div className="video-feed self-feed">
-                    {cameraOn ? (
-                      <div className="video-placeholder-small">
-                        <span style={{ fontSize: '12px' }}>You</span>
+                  <div className="video-main-area">
+                    {/* Main Video (Patient) */}
+                    <div className="video-feed patient-feed">
+                      <div className="video-placeholder">
+                        <Users size={64} />
+                        <p>Patient Feed (Mock)</p>
+                      </div>
+                    </div>
+
+                    {/* Picture-in-Picture (Doctor/Self) */}
+                    <div className="video-feed self-feed">
+                      {cameraOn ? (
+                        <div className="video-placeholder-small">
+                          <span style={{ fontSize: '12px' }}>You</span>
+                        </div>
+                      ) : (
+                        <div className="video-placeholder-small camera-off">
+                          <VideoOff size={16} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="video-controls">
+                    <button
+                      className={`ctrl-btn ${micOn ? '' : 'off'}`}
+                      onClick={() => setMicOn(!micOn)}
+                      title={micOn ? "Mute" : "Unmute"}
+                    >
+                      {micOn ? <Mic size={24} /> : <MicOff size={24} />}
+                    </button>
+
+                    <button
+                      className="ctrl-btn end-call"
+                      onClick={endVideoCall}
+                      title="End Call"
+                    >
+                      <PhoneOff size={24} />
+                    </button>
+
+                    <button
+                      className={`ctrl-btn ${cameraOn ? '' : 'off'}`}
+                      onClick={() => setCameraOn(!cameraOn)}
+                      title={cameraOn ? "Turn Camera Off" : "Turn Camera On"}
+                    >
+                      {cameraOn ? <Video size={24} /> : <VideoOff size={24} />}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // --- LOBBY UI (No Active Call) ---
+                <div className="content-card">
+                  <div className="card-header">
+                    <h2>Video Conference Lobby</h2>
+                    <p className="card-sub">All your scheduled online consultations appear here.</p>
+                  </div>
+
+                  <div className="table-responsive">
+                    {appointments.filter(a => a.type && a.type.toLowerCase().includes('online')).length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                        <Video size={48} style={{ marginBottom: '10px', opacity: 0.5 }} />
+                        <p>No online consultations scheduled.</p>
                       </div>
                     ) : (
-                      <div className="video-placeholder-small camera-off">
-                        <VideoOff size={16} />
-                      </div>
+                      <table className="dash-table">
+                        <thead>
+                          <tr>
+                            <th>Patient</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {appointments
+                            .filter(a => a.type && a.type.toLowerCase().includes('online'))
+                            .map(apt => (
+                              <tr key={apt.id || Math.random()}>
+                                <td className="fw-600">{apt.patient_name}</td>
+                                <td>{apt.time} ({apt.date})</td>
+                                <td>
+                                  <span className={`status-dot ${apt.status.toLowerCase()}`}></span>
+                                  {apt.status}
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn-add-slot"
+                                    style={{ margin: 0, padding: '6px 12px', fontSize: '0.9rem' }}
+                                    onClick={() => startVideoCall(apt)}
+                                  >
+                                    <Video size={16} style={{ marginRight: '6px' }} /> Join Call
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
-
-                <div className="video-controls">
-                  <button
-                    className={`ctrl-btn ${micOn ? '' : 'off'}`}
-                    onClick={() => setMicOn(!micOn)}
-                    title={micOn ? "Mute" : "Unmute"}
-                  >
-                    {micOn ? <Mic size={24} /> : <MicOff size={24} />}
-                  </button>
-
-                  <button
-                    className="ctrl-btn end-call"
-                    onClick={endVideoCall}
-                    title="End Call"
-                  >
-                    <PhoneOff size={24} />
-                  </button>
-
-                  <button
-                    className={`ctrl-btn ${cameraOn ? '' : 'off'}`}
-                    onClick={() => setCameraOn(!cameraOn)}
-                    title={cameraOn ? "Turn Camera Off" : "Turn Camera On"}
-                  >
-                    {cameraOn ? <Video size={24} /> : <VideoOff size={24} />}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // --- LOBBY UI (No Active Call) ---
-              <div className="content-card">
-                <div className="card-header">
-                  <h2>Video Conference Lobby</h2>
-                  <p className="card-sub">All your scheduled online consultations appear here.</p>
-                </div>
-
-                <div className="table-responsive">
-                  {appointments.filter(a => a.type && a.type.toLowerCase().includes('online')).length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                      <Video size={48} style={{ marginBottom: '10px', opacity: 0.5 }} />
-                      <p>No online consultations scheduled.</p>
-                    </div>
-                  ) : (
-                    <table className="dash-table">
-                      <thead>
-                        <tr>
-                          <th>Patient</th>
-                          <th>Time</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {appointments
-                          .filter(a => a.type && a.type.toLowerCase().includes('online'))
-                          .map(apt => (
-                            <tr key={apt.id || Math.random()}>
-                              <td className="fw-600">{apt.patient_name}</td>
-                              <td>{apt.time} ({apt.date})</td>
-                              <td>
-                                <span className={`status-dot ${apt.status.toLowerCase()}`}></span>
-                                {apt.status}
-                              </td>
-                              <td>
-                                <button
-                                  className="btn-add-slot"
-                                  style={{ margin: 0, padding: '6px 12px', fontSize: '0.9rem' }}
-                                  onClick={() => startVideoCall(apt)}
-                                >
-                                  <Video size={16} style={{ marginRight: '6px' }} /> Join Call
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              </div>
-            )
-          )}
-
+              )
+            )}
         </main>
       </div>
     </div>

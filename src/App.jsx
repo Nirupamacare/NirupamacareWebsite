@@ -19,7 +19,10 @@ import DoctorProfileEdit from './components/DoctorProfileEdit';
 import UserProfileView from "./components/UserProfileView";
 import AppointmentBooking from "./components/AppointmentBooking";
 import MyAppointments from "./components/MyAppointments";
+import PatientVideoCall from "./components/PatientVideoCall";
 import "./App.css";
+import DoctorVideoCall from "./components/DoctorVideoCall";
+import VideoCallRoom from "./components/VideoCallRoom";
 
 const SplashWrapper = () => {
   const navigate = useNavigate();
@@ -46,6 +49,19 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/security" element={<Security />} />
+            <Route path="/request-call/:doctorId" element={<PatientVideoCall />} />
+            <Route path="/doctor-video-calls" element={<DoctorVideoCall />} />
+             <Route 
+          path="/video-call/:callId" 
+          element={<VideoCallRoom userType="patient" />} 
+        />
+        
+        {/* You can also create separate routes for doctor if needed */}
+        <Route 
+          path="/doctor/video-call/:callId" 
+          element={<VideoCallRoom userType="doctor" />} 
+        />
+
             <Route path="/doctor-login" element={<DoctorAuth />} />
             <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
             <Route path="/userprofilesetup" element={<UserProfileSetup />} />
