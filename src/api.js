@@ -8,8 +8,8 @@ import {
 } from "firebase/auth";
 
 //const API_URL = "https://api-48aa.vercel.app/v1";
-//const API_URL = "http://localhost:8000/v1";
-const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
+const API_URL = "http://localhost:8000/v1";
+//const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
 
 // --- Helper: Get Token robustly ---
 const getAuthToken = () => {
@@ -128,12 +128,28 @@ export const api = {
             const response = await axios.post(`${API_URL}/doctor/upload-photo`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    "Content-Type": undefined, // Explicitly undefined to force browser to set boundary
+                    "Content-Type": undefined,
                 }
             });
-            return response.data; // { url: "..." }
+            return response.data;
         } catch (error) {
             console.error("Upload Photo Error:", error);
+            throw error;
+        }
+    },
+
+    // Resolve a shortened Google Maps URL → get expanded URL + lat/lng
+    resolveMapLink: async (url) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(
+                `${API_URL}/doctor/resolve-map-link`,
+                { url },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            return response.data; // { resolved_url, lat, lng }
+        } catch (error) {
+            console.error("Resolve Map Link Error:", error);
             throw error;
         }
     },
@@ -273,37 +289,34 @@ export const api = {
     // ================================
 
     // Search/List all doctors with optional filters
-    searchDoctors: async ({ location, specialization } = {}) => {
+    searchDoctors: async ({ location, specialization, page = 1, limit = 20 } = {}) => {
         try {
             const params = new URLSearchParams();
             if (location) params.append('location', location);
             if (specialization) params.append('specialization', specialization);
+            params.append('page', page);
+            params.append('limit', limit);
 
-            const queryString = params.toString();
-            const url = queryString ? `${API_URL}/doctor/list?${queryString}` : `${API_URL}/doctor/list`;
+            const url = `${API_URL}/doctor/list?${params.toString()}`;
 
             // Try to get token, but don't fail if not authenticated
             let headers = {};
             try {
                 const token = await getAuthToken();
                 headers = { Authorization: `Bearer ${token}` };
-                console.log("Fetching doctors with authentication");
             } catch (e) {
-                // Not authenticated - this is OK, make request without auth
                 console.log("Fetching doctors without authentication (public access)");
             }
 
             const response = await axios.get(url, { headers });
-            console.log(`Found ${response.data?.length || 0} doctors`);
-            return response.data; // Returns array of DoctorPublic
+            console.log(`Found ${response.data?.length || 0} doctors (page ${page})`);
+            return response.data;
         } catch (error) {
             console.error("Search Doctors Error:", {
                 status: error.response?.status,
                 data: error.response?.data,
                 message: error.message
             });
-            // Only return empty array if the actual API call failed
-            // This could be network error, server error, etc.
             return [];
         }
     },

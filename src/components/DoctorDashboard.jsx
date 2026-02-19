@@ -150,6 +150,13 @@ const DoctorDashboard = () => {
           })
         ]);
 
+        // Check if profile is complete - redirect to setup if not
+        if (!profileData || !profileData.first_name || !profileData.specialty || !profileData.city) {
+          console.log("Profile incomplete, redirecting to doctor-setup");
+          navigate('/doctor-setup');
+          return;
+        }
+
         if (profileData) {
           setDoctorProfile(profileData);
           setBlockedDates(profileData.blocked_dates || []);
@@ -222,6 +229,7 @@ const DoctorDashboard = () => {
   const handleUploadSubmit = async (attachments) => {
     if (!selectedAppointmentForUpload) return;
 
+    console.log('Starting upload with attachments:', attachments.length);
     setIsUploading(true);
     try {
       // API call to update status to "Completed" AND upload attachments
@@ -234,9 +242,17 @@ const DoctorDashboard = () => {
 
       setShowUploadModal(false);
       setSelectedAppointmentForUpload(null);
+      alert('Prescription uploaded successfully!');
     } catch (error) {
       console.error("Failed to complete appointment", error);
-      alert("Failed to upload documents. Please try again.");
+      console.error("Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+
+      const errorMessage = error.response?.data?.detail || error.message || "Unknown error occurred";
+      alert(`Failed to upload documents: ${errorMessage}\n\nPlease check the console for more details.`);
     } finally {
       setIsUploading(false);
     }
