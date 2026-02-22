@@ -8,8 +8,8 @@ import {
 } from "firebase/auth";
 
 //const API_URL = "https://api-48aa.vercel.app/v1";
-const API_URL = "http://localhost:8000/v1";
-//const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
+//const API_URL = "http://localhost:8000/v1";
+const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
 
 // --- Helper: Get Token robustly ---
 const getAuthToken = () => {
