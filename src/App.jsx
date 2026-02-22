@@ -20,6 +20,7 @@ import UserProfileView from "./components/UserProfileView";
 import AppointmentBooking from "./components/AppointmentBooking";
 import MyAppointments from "./components/MyAppointments";
 import MedicalRecords from "./components/MedicalRecords";
+import AdminPanel from "./components/AdminPanel";
 import "./App.css";
 
 const SplashWrapper = () => {
@@ -55,6 +56,7 @@ function App() {
             <Route path="/doctor-edit" element={<DoctorProfileEdit />} />
             <Route path="/view-profile" element={<UserProfileView />} />
             <Route path="/verify-otp" element={<Otp />} />
+            <Route path="/admin" element={<AdminPanel />} />
           </Routes>
         </main>
 

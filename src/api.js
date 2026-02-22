@@ -8,8 +8,8 @@ import {
 } from "firebase/auth";
 
 //const API_URL = "https://api-48aa.vercel.app/v1";
-//const API_URL = "http://localhost:8000/v1";
-const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
+const API_URL = "http://localhost:8000/v1";
+//const API_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net/v1";
 
 // --- Helper: Get Token robustly ---
 const getAuthToken = () => {
@@ -416,5 +416,91 @@ export const api = {
             console.error("Get Patient Appointments Error:", error);
             throw error;
         }
-    }
+    },
+
+    // ================================
+    // 6. DOCTOR VERIFICATION
+    // ================================
+
+    // Upload education / merit documents for verification (accepts File array)
+    uploadVerificationDocs: async (files) => {
+        try {
+            const token = await getAuthToken();
+            const formData = new FormData();
+            files.forEach(f => formData.append('files', f));
+            const response = await axios.post(
+                `${API_URL}/doctor/upload-verification-docs`,
+                formData,
+                { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Upload Verification Docs Error:", error);
+            throw error;
+        }
+    },
+
+    // Doctor calls this to submit their profile for admin review
+    requestVerification: async () => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(
+                `${API_URL}/doctor/request-verification`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Request Verification Error:", error);
+            throw error;
+        }
+    },
+
+    // ================================
+    // 7. ADMIN — Verification Management
+    // ================================
+
+    // List all doctors with status = 'pending'
+    listPendingDoctors: async () => {
+        try {
+            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? 'admin123' : '';
+            const response = await axios.get(`${API_URL}/admin/doctors/pending`, {
+                headers: { 'X-Admin-Key': adminKey }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("List Pending Doctors Error:", error);
+            throw error;
+        }
+    },
+
+    // List all doctors with status = 'verified'
+    listVerifiedDoctors: async () => {
+        try {
+            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? 'admin123' : '';
+            const response = await axios.get(`${API_URL}/admin/doctors/verified`, {
+                headers: { 'X-Admin-Key': adminKey }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("List Verified Doctors Error:", error);
+            throw error;
+        }
+    },
+
+    // Approve or reject a doctor  action: "approve" | "reject", note: string (required for reject)
+    verifyDoctor: async (doctorId, action, note = "") => {
+        try {
+            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? 'admin123' : '';
+            const response = await axios.patch(
+                `${API_URL}/admin/doctors/${doctorId}/verify`,
+                { action, note },
+                { headers: { 'X-Admin-Key': adminKey } }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Verify Doctor Error:", error);
+            throw error;
+        }
+    },
 };

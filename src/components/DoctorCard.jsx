@@ -30,7 +30,7 @@ const DoctorCard = ({ doctor }) => {
     if (feeDisplay.length === 0) feeDisplay.push("Consult Fee N/A");
 
     const slots = doctor.availabilities || doctor.availableSlots || [];
-    const verified = true; // Placeholder
+    const verified = doctor.verification_status === 'verified';
 
     // Prioritize Base64 profile_picture, fallback to URL, then placeholder
     const imageUrl = doctor.profile_picture || doctor.profile_image_url || `https://ui-avatars.com/api/?name=${name}&background=random`;
