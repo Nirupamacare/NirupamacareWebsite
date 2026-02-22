@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api';
+import { api, BACKEND_URL } from '../api';
 
 // ─── Hardcoded admin credentials (frontend gate only) ───────────────────────
 const ADMIN_USER = 'admin';
@@ -335,8 +335,8 @@ const AdminPanel = () => {
                                         // Use correct URL for backend static path
                                         let finalUrl = url;
                                         if (url.startsWith('/static/')) {
-                                            // Ensure correct backend URL mapping if running locally
-                                            finalUrl = `http://localhost:8000${url}`;
+                                            // Ensure correct backend URL mapping using the configured backend URL
+                                            finalUrl = `${BACKEND_URL}${url}`;
                                         }
 
                                         return (
