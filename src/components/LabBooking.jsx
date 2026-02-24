@@ -406,7 +406,7 @@ const styles = {
   searchIcon: { fontSize: 16, flexShrink: 0 },
   searchInput: { border: "none", outline: "none", fontSize: 15, color: "#0a0f1e", background: "transparent", flex: 1, padding: "8px 0" },
   searchDivider: { width: 1, height: 28, background: "#e2e6ed", margin: "0 16px" },
-  searchBtn: { background: "#0066ff", color: "#fff", border: "none", borderRadius: 50, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" },
+  searchBtn: { background: "#007B6C", color: "#fff", border: "none", borderRadius: 50, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" },
 
   loadingRow: { display: "flex", justifyContent: "center", padding: "48px 0" },
   spinner: { width: 32, height: 32, border: "3px solid #e2e6ed", borderTop: "3px solid #0066ff", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
@@ -420,13 +420,13 @@ const styles = {
   },
   labCardTop: { display: "flex", gap: 14, alignItems: "flex-start" },
   cardLogo: { width: 48, height: 48, borderRadius: 10, objectFit: "cover", flexShrink: 0 },
-  cardLogoPlaceholder: { width: 48, height: 48, borderRadius: 10, background: "#0066ff", color: "#fff", fontSize: 20, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  cardLogoPlaceholder: { width: 48, height: 48, borderRadius: 10, background: "#007B6C", color: "#fff", fontSize: 20, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   cardName: { fontSize: 16, fontWeight: 700, color: "#0a0f1e", margin: 0 },
   cardCity: { fontSize: 13, color: "#8892a4", margin: "4px 0 0" },
   cardTests: { display: "flex", flexWrap: "wrap", gap: 6 },
   cardTestTag: { background: "#f0f4ff", color: "#3b5bdb", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 600 },
   cardTestMore: { color: "#aab", fontSize: 11, padding: "3px 0" },
-  cardBookBtn: { marginTop: "auto", border: "none", background: "none", color: "#0066ff", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left", padding: 0 },
+  cardBookBtn: { marginTop: "auto", border: "none", background: "none", color: "#007B6C", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left", padding: 0 },
 
   // Detail view
   detailView: { padding: "32px 0 64px" },
