@@ -33,10 +33,22 @@ const MyAppointments = () => {
         // Get previously seen confirmed appointments from localStorage
         const seenConfirmations = JSON.parse(localStorage.getItem('seenConfirmations') || '[]');
 
-        // Find confirmed appointments that haven't been seen yet
-        const newConfirmations = appointments.filter(apt =>
-            apt.status === 'Confirmed' && !seenConfirmations.includes(apt.id)
-        );
+        // Get current date for comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate date comparison
+
+        // Find confirmed appointments that haven't been seen yet and are in the future
+        const newConfirmations = appointments.filter(apt => {
+            if (apt.status !== 'Confirmed' || seenConfirmations.includes(apt.id)) {
+                return false;
+            }
+
+            // Parse appointment date (assuming format like "DD/MM/YYYY" or "YYYY-MM-DD")
+            const aptDate = new Date(apt.date);
+
+            // Only show notification if appointment is today or in the future
+            return aptDate >= today;
+        });
 
         if (newConfirmations.length > 0) {
             // Show notification for the first new confirmation
@@ -58,10 +70,32 @@ const MyAppointments = () => {
         setNotification(null);
     };
 
+    // Helper function to get the actual display status based on date
+    const getDisplayStatus = (apt) => {
+        // If cancelled, always show cancelled
+        if (apt.status === 'Cancelled') {
+            return 'Cancelled';
+        }
+
+        // Check if the appointment date has passed
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const aptDate = new Date(apt.date);
+
+        // If confirmed and date has passed, show as Completed
+        if (apt.status === 'Confirmed' && aptDate < today) {
+            return 'Completed';
+        }
+
+        // Otherwise return the original status
+        return apt.status;
+    };
+
     const getStatusClass = (status) => {
         switch (status) {
             case 'Confirmed': return 'status-confirmed';
             case 'Cancelled': return 'status-cancelled';
+            case 'Completed': return 'status-completed';
             default: return 'status-pending';
         }
     };
@@ -70,6 +104,7 @@ const MyAppointments = () => {
         switch (status) {
             case 'Confirmed': return <CheckCircle size={16} />;
             case 'Cancelled': return <XCircle size={16} />;
+            case 'Completed': return <CheckCircle size={16} />;
             default: return <Clock size={16} />;
         }
     };
@@ -140,9 +175,9 @@ const MyAppointments = () => {
 
                                 <div className="apt-right">
                                     <div className="apt-status">
-                                        <span className={`status-badge ${getStatusClass(apt.status)}`}>
-                                            <span className="status-dot"></span>
-                                            {apt.status}
+                                        <span className={`status-badge ${getStatusClass(getDisplayStatus(apt))}`}>
+                                            {getStatusIcon(getDisplayStatus(apt))}
+                                            {getDisplayStatus(apt)}
                                         </span>
                                     </div>
                                 </div>

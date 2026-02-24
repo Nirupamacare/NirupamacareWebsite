@@ -39,7 +39,9 @@ const DoctorProfileView = () => {
                         experience: data.experience_years ? `${data.experience_years} Years` : "New",
                         about: data.bio || "No biography available for this doctor.",
                         languages: Array.isArray(data.languages) ? data.languages : [],
-                        credentials: data.credentials || "",
+                        education: data.education || "",
+                        is_nirupamacare_clinic: data.is_nirupamacare_clinic === true,
+                        map_link: data.map_link || "",
                         fee: data.price_clinic !== undefined ? data.price_clinic : "N/A",
                         feeOnline: data.price_online
                     });
@@ -63,6 +65,15 @@ const DoctorProfileView = () => {
             </header>
 
             <div className="profile-card-large">
+
+                {/* Nirupamacare Partner Banner */}
+                {doctor.is_nirupamacare_clinic && (
+                    <div className="profile-nirupama-banner">
+                        <img src="/nirupama1.png" alt="Nirupamacare" className="profile-nirupama-logo" />
+                        <span>✦ Nirupamacare Clinic Partner</span>
+                    </div>
+                )}
+
                 <div className="profile-top">
                     <img
                         src={doctor.profile_picture || doctor.profile_image_url || `https://ui-avatars.com/api/?name=${doctor.name}&background=random&size=128`}
@@ -73,7 +84,12 @@ const DoctorProfileView = () => {
                     <div className="profile-info-large">
                         <div className="name-row">
                             <h1>{doctor.name}</h1>
-                            {doctor.credentials && <span className="cred-badge">{doctor.credentials}</span>}
+                            {doctor.education && (
+                                <span className="cred-badge">
+                                    <GraduationCap size={13} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                                    {doctor.education}
+                                </span>
+                            )}
                         </div>
                         <p className="profile-spec">{doctor.specialization}</p>
                         <p className="profile-loc"><MapPin size={16} /> {doctor.location}</p>
@@ -104,11 +120,30 @@ const DoctorProfileView = () => {
                         </div>
                     )}
 
+                    {doctor.education && (
+                        <>
+                            <div className="divider"></div>
+                            <h3><GraduationCap size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />Education</h3>
+                            <p className="education-tag">{doctor.education}</p>
+                        </>
+                    )}
+
                     <div className="divider"></div>
 
                     <h3>Clinic Info</h3>
                     <p><strong>{doctor.clinicName}</strong></p>
                     <p style={{ color: '#666' }}>{doctor.location}</p>
+
+                    {doctor.map_link && (
+                        <a
+                            href={doctor.map_link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="profile-map-btn"
+                        >
+                            📍 View Clinic on Google Maps
+                        </a>
+                    )}
 
                     <div className="fees-grid">
                         {doctor.fee > 0 && (
@@ -155,6 +190,45 @@ const DoctorProfileView = () => {
                 }
                 .profile-header { margin-bottom: 20px; }
                 .back-btn { background:none; border:none; font-size: 1.1rem; cursor: pointer; color: #0f9d58; }
+
+                /* Nirupamacare banner at the top of the card */
+                .profile-nirupama-banner {
+                    background: linear-gradient(135deg, #0f9d58 0%, #0b813f 100%);
+                    color: white;
+                    padding: 10px 24px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                    letter-spacing: 0.3px;
+                }
+                .profile-nirupama-logo {
+                    height: 22px;
+                    width: 22px;
+                    object-fit: contain;
+                    border-radius: 50%;
+                    background: white;
+                    padding: 2px;
+                }
+
+                /* Map link button inside clinic section */
+                .profile-map-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin: 10px 0 0 0;
+                    padding: 8px 16px;
+                    background: #f0f9ff;
+                    border: 1.5px solid #0ea5e9;
+                    color: #0369a1;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    transition: background 0.2s;
+                }
+                .profile-map-btn:hover { background: #e0f2fe; }
                 
                 .profile-card-large {
                     background: white;
@@ -179,8 +253,20 @@ const DoctorProfileView = () => {
                 .name-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
                 .profile-info-large h2 h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
                 .cred-badge {
-                    background: #e0e7ff; color: #3730a3; padding: 2px 8px; 
-                    border-radius: 4px; font-size: 0.8rem; font-weight: 600;
+                    background: #e0e7ff; color: #3730a3; padding: 3px 10px; 
+                    border-radius: 4px; font-size: 0.78rem; font-weight: 600;
+                    display: inline-flex; align-items: center;
+                }
+                .education-tag {
+                    display: inline-block;
+                    background: #f0fdf4;
+                    color: #166534;
+                    border: 1px solid #bbf7d0;
+                    border-radius: 6px;
+                    padding: 8px 14px;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                    margin-top: 4px;
                 }
                 
                 .profile-spec { color: #0f9d58; font-weight: 600; margin: 0 0 8px 0; }
