@@ -488,15 +488,7 @@ approveCall: async (callId, action) => {
             return [];
         }
     },
-    recordCallEvent: async (callId, event) => {
-        try {
-            const token = await getAuthToken();
-            const response = await axios.post(
-                `${API_URL}/call/${callId}/events`,
-                { 
-                    event,
-                    at: new Date().toISOString()
-                },
+    
     // ================================
     // 6. DOCTOR VERIFICATION
     // ================================

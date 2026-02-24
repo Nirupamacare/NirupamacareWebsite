@@ -229,6 +229,7 @@ const Home = () => {
             {!isLoggedIn && (
               <>
                 <a href="/doctor-login" className="nav-link-secondary">For doctors/labs</a>
+                
                 <a href="/security" className="nav-link-secondary">Security</a>
                 <a href="/help" className="nav-link-secondary">Help</a>
               </>
