@@ -22,6 +22,12 @@ import MyAppointments from "./components/MyAppointments";
 import MedicalRecords from "./components/MedicalRecords";
 import AdminPanel from "./components/AdminPanel";
 import "./App.css";
+import DoctorVideoCall from "./components/DoctorVideoCall";
+import VideoCallRoom from "./components/VideoCallRoom";
+import PatientVideoCall from "./components/PatientVideoCall";
+import LabSignup from "./components/LabSIgnup"
+import LabDashboard from "./components/LabDashboard";
+import BookLab from "./components/LabBooking";
 
 const SplashWrapper = () => {
   const navigate = useNavigate();
@@ -49,6 +55,22 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/security" element={<Security />} />
+            <Route path="/request-call/:doctorId" element={<PatientVideoCall />} />
+            <Route path="/doctor-video-calls" element={<DoctorVideoCall />} />
+             <Route 
+          path="/video-call/:callId" 
+          element={<VideoCallRoom userType="patient" />} 
+        />
+        <Route 
+          path="/video-call" 
+          element={<VideoCallRoom />} 
+        />
+        
+        <Route 
+          path="/doctor/video-call/:callId" 
+          element={<VideoCallRoom userType="doctor" />} 
+        />
+
             <Route path="/doctor-login" element={<DoctorAuth />} />
             <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
             <Route path="/userprofilesetup" element={<UserProfileSetup />} />
@@ -56,6 +78,13 @@ function App() {
             <Route path="/doctor-edit" element={<DoctorProfileEdit />} />
             <Route path="/view-profile" element={<UserProfileView />} />
             <Route path="/verify-otp" element={<Otp />} />
+        
+            <Route path="/lab/signup" element={<LabSignup />} />
+            <Route path="/lab/dashboard" element={<LabDashboard />} />
+            <Route path="/lab-book" element={<BookLab />} />
+
+
+
             <Route path="/admin" element={<AdminPanel />} />
           </Routes>
         </main>

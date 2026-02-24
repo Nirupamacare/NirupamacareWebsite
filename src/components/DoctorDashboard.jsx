@@ -19,6 +19,9 @@ const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('appointments');
   const [loading, setLoading] = useState(true);
 
+  const [pendingCalls, setPendingCalls] = useState([]);
+
+
   // Dropdown Menu State
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
@@ -194,6 +197,9 @@ const DoctorDashboard = () => {
           pending: pendingCount
         });
 
+        const calls = await api.getDoctorPendingCalls();
+    setPendingCalls(calls.filter(c => c.status === 'requested'))
+
       } catch (err) {
         console.error("Failed to load dashboard data", err);
         // Check if it's an authentication error
@@ -205,10 +211,21 @@ const DoctorDashboard = () => {
       }
     });
 
+    
+
     // Cleanup subscription on unmount
     return () => unsubscribe();
   }, [navigate]);
 
+
+  useEffect(()=>{
+    const callsInterval = setInterval(async () => {
+    const calls = await api.getDoctorPendingCalls();
+    setPendingCalls(calls.filter(c => c.status === 'requested'));
+  }, 10000);
+  
+  return () => clearInterval(callsInterval);
+  },[])
   // --- Handlers ---
   const handleLogout = async () => {
     await api.logout();
@@ -488,9 +505,29 @@ const DoctorDashboard = () => {
             </button>
             <button
               className={activeTab === 'video' ? 'active' : ''}
-              onClick={() => setActiveTab('video')}
+              onClick={() => navigate('/doctor-video-calls')}
+              style={{ position: 'relative' }}
             >
               <Video size={20} /> Video Conference
+  {pendingCalls.length > 0 && (
+    <span style={{
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+      background: '#ef4444',
+      color: 'white',
+      borderRadius: '50%',
+      width: '20px',
+      height: '20px',
+      fontSize: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 'bold'
+    }}>
+      {pendingCalls.length}
+    </span>
+  )}
             </button>
             <button
               className={activeTab === 'analytics' ? 'active' : ''}

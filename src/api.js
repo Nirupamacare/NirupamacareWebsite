@@ -64,6 +64,7 @@ export const api = {
             const token = await userCred.user.getIdToken();
             // In a production app, you typically fetch the user's role from your backend here
             // For now, we return the firebase user and a successful role indicator
+            
             return { user: userCred.user, token: token, role: 'doctor' };
         } catch (error) {
             console.error("Login Error:", error);
@@ -419,6 +420,83 @@ export const api = {
         }
     },
 
+    async getVideoCallToken(callId,sdk='prebuilt') {
+    try {
+
+
+        const url = new URL(`${API_URL}/call/${callId}/token`);
+      url.searchParams.append('sdk', sdk);
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authentication header if needed
+          'Authorization': `Bearer ${await getAuthToken()}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to get video call token: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching video call token:', error);
+      throw error;
+    }
+  },
+
+  requestCall: async (callData) => {
+    try {
+        const token = await getAuthToken();
+        const response = await axios.post(`${API_URL}/call/request`, callData, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Request Call Error:", error);
+        throw error;
+    }
+},
+
+approveCall: async (callId, action) => {
+    try {
+        const token = await getAuthToken();
+        const response = await axios.post(
+            `${API_URL}/call/${callId}/approve`,
+            { action }, // 'approve' or 'reject'
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Approve Call Error:", error);
+        throw error;
+    }
+},
+
+ getDoctorPendingCalls: async () => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.get(`${API_URL}/call/incoming`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Get Incoming Calls Error:", error);
+            return [];
+        }
+    },
+    recordCallEvent: async (callId, event) => {
+        try {
+            const token = await getAuthToken();
+            const response = await axios.post(
+                `${API_URL}/call/${callId}/events`,
+                { 
+                    event,
+                    at: new Date().toISOString()
+                },
     // ================================
     // 6. DOCTOR VERIFICATION
     // ================================
@@ -452,11 +530,130 @@ export const api = {
             );
             return response.data;
         } catch (error) {
+            console.error("Record Call Event Error:", error);
             console.error("Request Verification Error:", error);
             throw error;
         }
     },
 
+
+
+// ================================
+// 7. LAB AUTH / ONBOARDING
+// ================================
+
+    registerLab: async ({ email, password, labName }) => {
+    try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseToken = await userCred.user.getIdToken();
+
+        const payload = {
+            role_request: "lab",
+            first_name: labName,
+            last_name: "",
+            email: email,
+        };
+
+        const response = await axios.post(`${API_URL}/auth/register`, payload, {
+            headers: { Authorization: `Bearer ${firebaseToken}` },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("Lab Registration Error:", error);
+        throw error;
+    }
+},
+
+// ================================
+// 8. LAB PROFILE MANAGEMENT
+// ================================
+
+getLabProfile: async () => {
+    const token = await getAuthToken();
+    const response = await axios.get(`${API_URL}/lab/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+},
+
+createLabProfile: async (profileData) => {
+    const token = await getAuthToken();
+    const response = await axios.post(`${API_URL}/lab/profile`, profileData, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+},
+
+getLabBookings: async () => {
+    const token = await getAuthToken();
+    const response = await axios.get(`${API_URL}/lab/bookings`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+},
+
+updateLabBookingStatus: async (bookingId, status) => {
+    const token = await getAuthToken();
+    const response = await axios.put(
+        `${API_URL}/lab/bookings/${bookingId}/status`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+},
+
+// ================================
+// 9. PATIENT — SEARCH & BOOK LABS
+// ================================
+
+searchLabs: async ({ city, test } = {}) => {
+    try {
+        const params = new URLSearchParams();
+        if (city) params.append("city", city);
+        if (test) params.append("test", test);
+
+        const url = `${API_URL}/labs/list${params.toString() ? "?" + params.toString() : ""}`;
+
+        let headers = {};
+        try {
+            const token = await getAuthToken();
+            headers = { Authorization: `Bearer ${token}` };
+        } catch (_) {}
+
+        const response = await axios.get(url, { headers });
+        return response.data;
+    } catch (error) {
+        console.error("Search Labs Error:", error);
+        return [];
+    }
+},
+
+getLabById: async (labId) => {
+    let headers = {};
+    try {
+        const token = await getAuthToken();
+        headers = { Authorization: `Bearer ${token}` };
+    } catch (_) {}
+    const response = await axios.get(`${API_URL}/labs/${labId}`, { headers });
+    return response.data;
+},
+
+bookLabTest: async (bookingData) => {
+    const token = await getAuthToken();
+    const response = await axios.post(`${API_URL}/labs/book`, bookingData, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+},
+
+getPatientLabBookings: async () => {
+    const token = await getAuthToken();
+    const response = await axios.get(`${API_URL}/labs/bookings/my`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+},
     // ================================
     // 7. ADMIN — Verification Management
     // ================================

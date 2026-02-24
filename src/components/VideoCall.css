@@ -1,0 +1,236 @@
+/* Video Call Container */
+.video-call-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0f172a;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Loading State */
+.video-call-container.loading-state,
+.video-call-container.error-state {
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-state {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+}
+
+.loading-state .spinner {
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+  color: #60a5fa;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* Error State */
+.error-state {
+  background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 500px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.error-content svg {
+  margin-bottom: 24px;
+}
+
+.error-content h2 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.error-content p {
+  color: #e2e8f0;
+  font-size: 1rem;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.error-content .btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.error-content .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+/* Back Button */
+.back-button,
+.close-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  z-index: 10000;
+}
+
+.back-button:hover,
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-4px);
+}
+
+.close-button {
+  left: auto;
+  right: 20px;
+}
+
+.close-button:hover {
+  transform: translateX(4px);
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Video Call Wrapper */
+.video-call-wrapper {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Doctor-specific styles */
+.video-call-container.doctor-call {
+  background: #0a0e1a;
+}
+
+.video-call-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(15, 23, 42, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.call-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.patient-name {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.live-indicator {
+  color: #ef4444;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.end-call-button {
+  background: rgba(239, 68, 68, 0.2);
+  color: white;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.end-call-button:hover {
+  background: rgba(239, 68, 68, 0.4);
+  transform: scale(1.05);
+}
+
+/* Override ZegoCloud default styles if needed */
+.video-call-wrapper > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .video-call-header {
+    padding: 12px 16px;
+  }
+
+  .patient-name {
+    font-size: 1rem;
+  }
+
+  .error-content {
+    margin: 20px;
+    padding: 30px 20px;
+  }
+
+  .back-button,
+  .close-button {
+    top: 12px;
+    left: 12px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .close-button {
+    right: 12px;
+  }
+}

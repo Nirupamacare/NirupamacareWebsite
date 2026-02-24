@@ -220,7 +220,7 @@ const Home = () => {
             <ul className="home-primary-nav desktop-only">
               <li><a href="/doctors" className="active-link">Get Doctor</a></li>
               <li><a href="/video-consult">Video Consult</a></li>
-              <li><a href="/lab-tests">Book Lab Test</a></li>
+              <li><a href="/lab-book">Book Lab Test</a></li>
             </ul>
           </div>
 
