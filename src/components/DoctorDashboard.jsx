@@ -45,6 +45,12 @@ const DoctorDashboard = () => {
   // Stats
   const [stats, setStats] = useState({ total: 0, today: 0, pending: 0 });
 
+  // Verification
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [docFiles, setDocFiles] = useState([]);
+  const [docUploading, setDocUploading] = useState(false);
+  const [uploadedDocUrls, setUploadedDocUrls] = useState([]);
+
   // Form State (Aligned with Backend naming: snake_case)
   const [newSlot, setNewSlot] = useState({ day: 'Monday', start_time: '', end_time: '' });
 
@@ -54,6 +60,10 @@ const DoctorDashboard = () => {
   const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   const [undoStack, setUndoStack] = useState(null); // To store previous slots for Undo logic
+
+  // Banner visibility state
+  const [showVerifiedBanner, setShowVerifiedBanner] = useState(false);
+
 
   const handleToggleDay = (day) => {
     if (selectedDays.includes(day)) {
@@ -153,9 +163,23 @@ const DoctorDashboard = () => {
           })
         ]);
 
+        // Check if profile is complete - redirect to setup if not
+        if (!profileData || !profileData.first_name || !profileData.specialty || !profileData.city) {
+          console.log("Profile incomplete, redirecting to doctor-setup");
+          navigate('/doctor-setup');
+          return;
+        }
+
         if (profileData) {
           setDoctorProfile(profileData);
           setBlockedDates(profileData.blocked_dates || []);
+
+          if (profileData.verification_status === 'verified') {
+            const seenKey = 'verified_seen_' + profileData._id;
+            if (!localStorage.getItem(seenKey)) {
+              setShowVerifiedBanner(true);
+            }
+          }
         }
         setAppointments(appointmentsData || []);
 
@@ -205,7 +229,42 @@ const DoctorDashboard = () => {
   // --- Handlers ---
   const handleLogout = async () => {
     await api.logout();
-    navigate('/doctor-login'); // Make sure this matches your Route path
+    navigate('/doctor-login');
+  };
+
+  const handleRequestVerification = async () => {
+    setVerificationLoading(true);
+    try {
+      await api.requestVerification();
+      setDoctorProfile(prev => ({ ...prev, verification_status: 'pending' }));
+      alert('Verification request submitted! An admin will review your profile shortly.');
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Failed to submit request. Please try again.';
+      alert(msg);
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  const handleDocUpload = async () => {
+    if (docFiles.length === 0) { alert('Please select files first.'); return; }
+    setDocUploading(true);
+    try {
+      const result = await api.uploadVerificationDocs(Array.from(docFiles));
+      const newUrls = result.urls || [];
+      setUploadedDocUrls(prev => [...prev, ...newUrls]);
+      setDoctorProfile(prev => ({
+        ...prev,
+        verification_documents: [...(prev.verification_documents || []), ...newUrls]
+      }));
+      setDocFiles([]);
+      alert(`${newUrls.length} document(s) uploaded successfully!`);
+    } catch (error) {
+      const msg = error.response?.data?.detail || 'Upload failed. Please try again.';
+      alert(msg);
+    } finally {
+      setDocUploading(false);
+    }
   };
 
   const handleStatusUpdate = async (aptId, newStatus) => {
@@ -239,6 +298,7 @@ const DoctorDashboard = () => {
   const handleUploadSubmit = async (attachments) => {
     if (!selectedAppointmentForUpload) return;
 
+    console.log('Starting upload with attachments:', attachments.length);
     setIsUploading(true);
     try {
       // API call to update status to "Completed" AND upload attachments
@@ -251,9 +311,17 @@ const DoctorDashboard = () => {
 
       setShowUploadModal(false);
       setSelectedAppointmentForUpload(null);
+      alert('Prescription uploaded successfully!');
     } catch (error) {
       console.error("Failed to complete appointment", error);
-      alert("Failed to upload documents. Please try again.");
+      console.error("Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+
+      const errorMessage = error.response?.data?.detail || error.message || "Unknown error occurred";
+      alert(`Failed to upload documents: ${errorMessage}\n\nPlease check the console for more details.`);
     } finally {
       setIsUploading(false);
     }
@@ -471,6 +539,127 @@ const DoctorDashboard = () => {
         </aside>
 
         <main className="dash-content">
+
+          {/* Verification Status Banner */}
+          {doctorProfile && doctorProfile.verification_status !== 'verified' && (
+            <div style={{
+              margin: '0 0 20px 0',
+              padding: '20px',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              ...(doctorProfile.verification_status === 'pending'
+                ? { background: '#fffbeb', border: '1px solid #f59e0b', color: '#92400e' }
+                : doctorProfile.verification_status === 'rejected'
+                  ? { background: '#fef2f2', border: '1px solid #ef4444', color: '#991b1b' }
+                  : { background: '#eff6ff', border: '1px solid #3b82f6', color: '#1e40af' })
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '1.4rem' }}>
+                    {doctorProfile.verification_status === 'pending' ? '⏳' :
+                      doctorProfile.verification_status === 'rejected' ? '❌' : '🔵'}
+                  </span>
+                  <div>
+                    <strong style={{ display: 'block', marginBottom: '2px' }}>
+                      {doctorProfile.verification_status === 'pending' && 'Verification Pending'}
+                      {doctorProfile.verification_status === 'rejected' && 'Verification Rejected'}
+                      {doctorProfile.verification_status === 'unverified' && 'Profile Not Yet Verified'}
+                    </strong>
+                    <span style={{ fontSize: '0.88rem' }}>
+                      {doctorProfile.verification_status === 'pending' &&
+                        'Your profile is under review. You will appear as unverified until approved.'}
+                      {doctorProfile.verification_status === 'rejected' &&
+                        `Reason: ${doctorProfile.verification_note || 'Contact admin for details.'}`}
+                      {doctorProfile.verification_status === 'unverified' &&
+                        'Submit your profile and education/merit documents for admin review to get the ✓ Verified badge.'}
+                    </span>
+                  </div>
+                </div>
+                {(doctorProfile.verification_status === 'unverified' || doctorProfile.verification_status === 'rejected') && (
+                  <button
+                    onClick={handleRequestVerification}
+                    disabled={verificationLoading || !(doctorProfile.verification_documents?.length > 0)}
+                    style={{
+                      padding: '8px 18px', borderRadius: '8px', border: 'none',
+                      background: doctorProfile.verification_status === 'rejected' ? '#ef4444' : '#3b82f6',
+                      color: 'white', fontWeight: '600', cursor: 'pointer', fontSize: '0.88rem',
+                      opacity: (verificationLoading || !(doctorProfile.verification_documents?.length > 0)) ? 0.6 : 1
+                    }}
+                    title={!(doctorProfile.verification_documents?.length > 0) ? "Upload documents first" : ""}
+                  >
+                    {verificationLoading ? 'Submitting...' : '🔍 Request Verification'}
+                  </button>
+                )}
+              </div>
+
+              {/* Document Upload Section */}
+              {(doctorProfile.verification_status === 'unverified' || doctorProfile.verification_status === 'rejected') && (
+                <div style={{ background: 'rgba(255,255,255,0.6)', padding: '16px', borderRadius: '8px', border: '1px dashed #3b82f6' }}>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#1e40af' }}>📄 Upload Education & Merit Documents</h4>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', color: '#475569' }}>
+                    Please upload your medical licenses, degrees, or certifications (PDF, JPEG, PNG). An admin will review these.
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,image/jpeg,image/png"
+                      onChange={(e) => setDocFiles(e.target.files)}
+                      style={{ fontSize: '0.85rem', color: '#1e293b' }}
+                    />
+                    <button
+                      onClick={handleDocUpload}
+                      disabled={docUploading || docFiles.length === 0}
+                      style={{
+                        padding: '6px 14px', borderRadius: '6px', border: '1px solid #3b82f6',
+                        background: 'white', color: '#3b82f6', fontWeight: '600', fontSize: '0.85rem',
+                        cursor: docFiles.length === 0 || docUploading ? 'not-allowed' : 'pointer',
+                        opacity: docFiles.length === 0 || docUploading ? 0.6 : 1
+                      }}
+                    >
+                      {docUploading ? 'Uploading...' : 'Upload Files'}
+                    </button>
+                  </div>
+
+                  {doctorProfile.verification_documents && doctorProfile.verification_documents.length > 0 && (
+                    <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#16a34a', fontWeight: '600' }}>
+                      ✓ {doctorProfile.verification_documents.length} document(s) uploaded and saved.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ✓ Verified Banner */}
+          {showVerifiedBanner && doctorProfile?.verification_status === 'verified' && (
+            <div style={{
+              margin: '0 0 20px 0', padding: '12px 20px', borderRadius: '12px',
+              background: '#f0fdf4', border: '1px solid #22c55e',
+              color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.3rem' }}>✅</span>
+                <strong>Your profile is Verified. The "✓ Verified" badge is now visible to all patients.</strong>
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.setItem('verified_seen_' + doctorProfile._id, 'true');
+                  setShowVerifiedBanner(false);
+                }}
+                style={{
+                  background: 'none', border: 'none', color: '#15803d', fontSize: '1.2rem',
+                  cursor: 'pointer', padding: '0 4px'
+                }}
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* Stats */}
           {activeTab !== 'video' && (

@@ -14,6 +14,9 @@ const Doctors = () => {
 
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const PAGE_LIMIT = 10;
 
     // Local state for the input fields
     const [filters, setFilters] = useState({
@@ -32,31 +35,31 @@ const Doctors = () => {
             location: searchParams.get('location') || '',
             specialization: searchParams.get('specialization') || ''
         });
-        fetchDoctors();
+        setCurrentPage(1);
+        fetchDoctors(1);
     }, [searchParams]);
 
-    const fetchDoctors = async () => {
+    const fetchDoctors = async (page = 1) => {
         setLoading(true);
         try {
-            // Get current URL params
             const currentParams = new URLSearchParams(window.location.search);
             const location = currentParams.get('location') || '';
             const specialization = currentParams.get('specialization') || '';
 
-            // Use the centralized API function
-            const data = await api.searchDoctors({ location, specialization });
+            const data = await api.searchDoctors({ location, specialization, page, limit: PAGE_LIMIT });
 
-            // Data should already be an array
             if (Array.isArray(data)) {
                 setDoctors(data);
+                setHasMore(data.length === PAGE_LIMIT); // if full page returned, likely more exist
             } else {
                 console.warn("Unexpected response format:", data);
                 setDoctors([]);
+                setHasMore(false);
             }
-
         } catch (error) {
             console.error("Failed to fetch doctors:", error);
             setDoctors([]);
+            setHasMore(false);
         } finally {
             setLoading(false);
         }
@@ -193,6 +196,37 @@ const Doctors = () => {
                                 <div className="empty-state">
                                     <h3>No doctors found matching filters.</h3>
                                     <p>Try adjusting your search criteria.</p>
+                                </div>
+                            )}
+
+                            {/* Pagination Controls */}
+                            {(currentPage > 1 || hasMore) && (
+                                <div className="pagination-controls">
+                                    <button
+                                        className="btn-page"
+                                        disabled={currentPage === 1}
+                                        onClick={() => {
+                                            const newPage = currentPage - 1;
+                                            setCurrentPage(newPage);
+                                            fetchDoctors(newPage);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                    >
+                                        ← Previous
+                                    </button>
+                                    <span className="page-indicator">Page {currentPage}</span>
+                                    <button
+                                        className="btn-page"
+                                        disabled={!hasMore}
+                                        onClick={() => {
+                                            const newPage = currentPage + 1;
+                                            setCurrentPage(newPage);
+                                            fetchDoctors(newPage);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                    >
+                                        Next →
+                                    </button>
                                 </div>
                             )}
                         </>

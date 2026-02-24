@@ -185,6 +185,12 @@
     color: #ef6c00;
 }
 
+.status-completed,
+.status-badge.status-completed {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
 /* Notification Banner */
 .notification-banner {
     margin-bottom: 20px;

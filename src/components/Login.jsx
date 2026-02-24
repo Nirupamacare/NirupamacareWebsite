@@ -13,6 +13,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
@@ -67,12 +68,15 @@ const AuthPage = () => {
   // --- 1. GOOGLE LOGIN ---
   const handleGoogleLogin = async () => {
     setError("");
+    setLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
       await handleBackendSync(result.user);
     } catch (err) {
       console.error("Google Login Error:", err);
       setError("Google Sign-In failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,6 +84,7 @@ const AuthPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     const email = formData.identifier; 
     const password = formData.password;
@@ -94,6 +99,7 @@ const AuthPage = () => {
         // Register
         if (password !== formData.confirmPassword) {
           setError("Passwords do not match!");
+          setLoading(false);
           return;
         }
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -109,6 +115,8 @@ const AuthPage = () => {
       else if (err.code === "auth/wrong-password") setError("Incorrect password.");
       else if (err.code === "auth/email-already-in-use") setError("Email already used.");
       else setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,8 +209,8 @@ const AuthPage = () => {
               </div>
             )}
 
-            <button type="submit" className="auth-btn-primary">
-              {isLogin ? 'Login' : 'Register'}
+            <button type="submit" className="auth-btn-primary" disabled={loading}>
+              {loading ? 'Processing...' : (isLogin ? 'Login' : 'Register')}
             </button>
 
             <div className="auth-divider">
@@ -213,9 +221,10 @@ const AuthPage = () => {
                 type="button" 
                 className="auth-btn-secondary"
                 onClick={handleGoogleLogin}
+                disabled={loading}
                 style={{ marginBottom: '10px', backgroundColor: '#db4437', color: 'white', borderColor: '#db4437' }}
             >
-              Sign in with Google
+              {loading ? 'Processing...' : 'Sign in with Google'}
             </button>
           </form>
 

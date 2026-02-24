@@ -20,6 +20,7 @@ import UserProfileView from "./components/UserProfileView";
 import AppointmentBooking from "./components/AppointmentBooking";
 import MyAppointments from "./components/MyAppointments";
 import MedicalRecords from "./components/MedicalRecords";
+import AdminPanel from "./components/AdminPanel";
 import "./App.css";
 import DoctorVideoCall from "./components/DoctorVideoCall";
 import VideoCallRoom from "./components/VideoCallRoom";
@@ -84,6 +85,7 @@ function App() {
 
 
 
+            <Route path="/admin" element={<AdminPanel />} />
           </Routes>
         </main>
 

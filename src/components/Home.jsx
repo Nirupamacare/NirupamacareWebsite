@@ -99,10 +99,22 @@ const Home = () => {
     // Get previously seen confirmed appointments from localStorage
     const seenConfirmations = JSON.parse(localStorage.getItem('seenConfirmations') || '[]');
 
-    // Find confirmed appointments that haven't been seen yet
-    const newConfirmations = appointments.filter(apt =>
-      apt.status === 'Confirmed' && !seenConfirmations.includes(apt.id)
-    );
+    // Get current date for comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate date comparison
+
+    // Find confirmed appointments that haven't been seen yet and are in the future
+    const newConfirmations = appointments.filter(apt => {
+      if (apt.status !== 'Confirmed' || seenConfirmations.includes(apt.id)) {
+        return false;
+      }
+
+      // Parse appointment date (assuming format like "DD/MM/YYYY" or "YYYY-MM-DD")
+      const aptDate = new Date(apt.date);
+
+      // Only show notification if appointment is today or in the future
+      return aptDate >= today;
+    });
 
     if (newConfirmations.length > 0) {
       // Show notification for the first new confirmation

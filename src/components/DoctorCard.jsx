@@ -30,13 +30,27 @@ const DoctorCard = ({ doctor }) => {
     if (feeDisplay.length === 0) feeDisplay.push("Consult Fee N/A");
 
     const slots = doctor.availabilities || doctor.availableSlots || [];
-    const verified = true; // Placeholder
+    const verified = doctor.verification_status === 'verified';
 
     // Prioritize Base64 profile_picture, fallback to URL, then placeholder
     const imageUrl = doctor.profile_picture || doctor.profile_image_url || `https://ui-avatars.com/api/?name=${name}&background=random`;
 
+    const mapLink = doctor.map_link || null;
+    const isNirupamacare = doctor.is_nirupamacare_clinic === true;
+
     return (
-        <div className="doctor-card">
+        <div className={`doctor-card${isNirupamacare ? ' nirupamacare-card' : ''}`}>
+
+            {/* Nirupamacare Banner */}
+            {isNirupamacare && (
+                <div className="nirupamacare-badge-bar">
+                    <span className="nirupamacare-badge">
+                        <img src="/nirupama1.png" alt="Nirupamacare" className="badge-logo" />
+                        Nirupamacare Clinic Partner
+                    </span>
+                </div>
+            )}
+
             <div className="doctor-card-content">
                 <div className="doctor-image-container">
                     <img
@@ -76,6 +90,16 @@ const DoctorCard = ({ doctor }) => {
             </div>
 
             <div className="doctor-card-actions">
+                {mapLink && (
+                    <a
+                        href={mapLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-view-map"
+                    >
+                        📍 View on Map
+                    </a>
+                )}
                 <button
                     className="btn-view-profile"
                     onClick={() => navigate(`/doctor-profile/${doctor._id || doctor.id}`)}
