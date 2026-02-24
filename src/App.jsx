@@ -23,6 +23,10 @@ import MedicalRecords from "./components/MedicalRecords";
 import "./App.css";
 import DoctorVideoCall from "./components/DoctorVideoCall";
 import VideoCallRoom from "./components/VideoCallRoom";
+import PatientVideoCall from "./components/PatientVideoCall";
+import LabSignup from "./components/LabSIgnup"
+import LabDashboard from "./components/LabDashboard";
+import BookLab from "./components/LabBooking";
 
 const SplashWrapper = () => {
   const navigate = useNavigate();
@@ -56,8 +60,11 @@ function App() {
           path="/video-call/:callId" 
           element={<VideoCallRoom userType="patient" />} 
         />
+        <Route 
+          path="/video-call" 
+          element={<VideoCallRoom />} 
+        />
         
-        {/* You can also create separate routes for doctor if needed */}
         <Route 
           path="/doctor/video-call/:callId" 
           element={<VideoCallRoom userType="doctor" />} 
@@ -70,6 +77,13 @@ function App() {
             <Route path="/doctor-edit" element={<DoctorProfileEdit />} />
             <Route path="/view-profile" element={<UserProfileView />} />
             <Route path="/verify-otp" element={<Otp />} />
+        
+            <Route path="/lab/signup" element={<LabSignup />} />
+            <Route path="/lab/dashboard" element={<LabDashboard />} />
+            <Route path="/lab-book" element={<BookLab />} />
+
+
+
           </Routes>
         </main>
 

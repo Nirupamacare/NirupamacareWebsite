@@ -183,6 +183,42 @@ const MyAppointments = () => {
                                     </div>
                                 </div>
                             )}
+
+                            {apt.type && apt.type.includes('Online') && apt.status === 'Confirmed' && (
+  <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+    <button
+      className="btn-video-call"
+      onClick={() => navigate(`/request-call/${apt.doctor_id}`)}
+      style={{
+        width: '100%',
+        padding: '12px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        fontSize: '1rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s'
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+    >
+      <Video size={20} />
+      Start Video Consultation
+    </button>
+  </div>
+)}
                         </div>
                     ))}
                 </div>

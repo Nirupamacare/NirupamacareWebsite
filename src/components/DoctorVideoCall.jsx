@@ -10,6 +10,17 @@ const DoctorVideoCall = () => {
     const [loading, setLoading] = useState(true);
     const [processingCallId, setProcessingCallId] = useState(null);
 
+     const loadIncomingCalls = async () => {
+        try {
+            const calls = await api.getDoctorPendingCalls();
+            setIncomingCalls(calls);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error loading incoming calls:', err);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         loadIncomingCalls();
 
@@ -21,16 +32,7 @@ const DoctorVideoCall = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const loadIncomingCalls = async () => {
-        try {
-            const calls = await api.getDoctorPendingCalls();
-            setIncomingCalls(calls);
-            setLoading(false);
-        } catch (err) {
-            console.error('Error loading incoming calls:', err);
-            setLoading(false);
-        }
-    };
+   
 
     const handleApprove = async (callId) => {
         try {
@@ -38,7 +40,7 @@ const DoctorVideoCall = () => {
             await api.approveCall(callId, 'approve');
             
             // Navigate to video call room
-            navigate(`/video-call/${callId}`);
+            navigate(`/doctor/video-call/${callId}`);
         } catch (err) {
             console.error('Error approving call:', err);
             alert('Failed to approve call. Please try again.');
@@ -167,7 +169,7 @@ const DoctorVideoCall = () => {
                                     <div className="call-actions">
                                         <button
                                             className="btn-join"
-                                            onClick={() => navigate(`/video-call/${call.id}`)}
+                                            onClick={() => navigate(`/doctor/video-call/${call.id}`)}
                                         >
                                             <Video size={18} />
                                             Join Call
@@ -179,7 +181,7 @@ const DoctorVideoCall = () => {
                                     <div className="call-actions">
                                         <button
                                             className="btn-join active"
-                                            onClick={() => navigate(`/video-call/${call.id}`)}
+                                            onClick={() => navigate(`/doctor/video-call/${call.id}`)}
                                         >
                                             <Video size={18} />
                                             Rejoin Call
