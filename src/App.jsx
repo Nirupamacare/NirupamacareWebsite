@@ -25,8 +25,8 @@ import "./App.css";
 import DoctorVideoCall from "./components/DoctorVideoCall";
 import VideoCallRoom from "./components/VideoCallRoom";
 import PatientVideoCall from "./components/PatientVideoCall";
-import LabSignup from "./components/LabSIgnup"
 import LabDashboard from "./components/LabDashboard";
+import LabSignup from "./components/LabSignup";
 import BookLab from "./components/LabBooking";
 
 const SplashWrapper = () => {
