@@ -307,7 +307,7 @@ const Home = () => {
           {/* Primary Nav Items */}
           <a onClick={() => handleNavigation('/doctors')}>Get Doctor</a>
           <a onClick={() => handleNavigation('/video-consult')}>Video Consult</a>
-          <a onClick={() => handleNavigation('/lab-tests')}>Book Lab Test</a>
+          <a onClick={() => handleNavigation('/lab-book')}>Book Lab Test</a>
 
           <hr className="mobile-divider" />
 
