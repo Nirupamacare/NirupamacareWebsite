@@ -8,6 +8,29 @@ const STATUS_COLORS = {
   Completed: { bg: "#eff6ff", color: "#1e40af" },
 };
 
+const COMMON_TESTS = [
+  "Complete Blood Count (CBC)", "Hemoglobin (Hb)", "HbA1c",
+  "Blood Sugar Fasting", "Blood Sugar PP", "Random Blood Sugar", "OGTT",
+  "Lipid Profile", "Total Cholesterol", "LDL Cholesterol", "HDL Cholesterol", "Triglycerides",
+  "Liver Function Test (LFT)", "SGPT / ALT", "SGOT / AST", "Bilirubin Total",
+  "Alkaline Phosphatase", "GGT",
+  "Kidney Function Test (KFT)", "Serum Creatinine", "BUN", "Uric Acid", "eGFR",
+  "Thyroid Profile (T3 T4 TSH)", "TSH", "Free T3", "Free T4",
+  "Vitamin D (25-OH)", "Vitamin B12", "Iron Studies", "Serum Ferritin", "TIBC",
+  "Calcium", "Phosphorus", "Magnesium", "Electrolytes",
+  "ESR", "CRP", "RA Factor", "Anti-CCP", "ANA",
+  "Urine Routine", "Urine Culture", "Urine Microalbumin",
+  "Stool Routine", "Stool Culture", "H. Pylori Antigen",
+  "Blood Culture", "Widal Test", "Dengue NS1 Antigen", "Dengue IgG/IgM",
+  "Malaria Antigen", "COVID-19 RT-PCR",
+  "Hepatitis B (HBsAg)", "Hepatitis C (HCV)", "HIV Test", "VDRL",
+  "PSA", "CA-125", "CEA", "AFP", "Beta HCG",
+  "Prolactin", "LH", "FSH", "Testosterone", "Estradiol", "Cortisol",
+  "Insulin Fasting", "PT/INR", "APTT", "D-Dimer", "Troponin I", "CK-MB",
+  "Homocysteine", "hs-CRP", "Serum Albumin",
+  "ECG", "Echo", "X-Ray", "Ultrasound Abdomen", "Ultrasound Pelvis", "Chest X-Ray",
+];
+
 export default function BookLab() {
   const [view, setView] = useState("search"); // search | detail | book | mybookings
   const [labs, setLabs] = useState([]);
@@ -19,6 +42,9 @@ export default function BookLab() {
   // Search
   const [city, setCity] = useState("");
   const [test, setTest] = useState("");
+
+  const [testSuggestions, setTestSuggestions] = useState([]);
+const [showTestDrop, setShowTestDrop] = useState(false);
 
   // Booking form
   const [form, setForm] = useState({ test_name: "", scheduled_date: "", scheduled_time: "", notes: "" });
@@ -122,13 +148,44 @@ export default function BookLab() {
                 <div style={styles.searchDivider} />
                 <div style={styles.searchField}>
                   <span style={styles.searchIcon}>🔬</span>
-                  <input
-                    style={styles.searchInput}
-                    placeholder="Test name (e.g. HbA1c)"
-                    value={test}
-                    onChange={(e) => setTest(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  />
+                  <div style={{ ...styles.searchField, position: "relative" }}>
+  <span style={styles.searchIcon}>🔬</span>
+  <input
+    style={styles.searchInput}
+    placeholder="Search test (e.g. HbA1c, CBC...)"
+    value={test}
+    onChange={(e) => {
+      const v = e.target.value;
+      setTest(v);
+      setTestSuggestions(
+        v ? COMMON_TESTS.filter(t => t.toLowerCase().includes(v.toLowerCase())) : COMMON_TESTS
+      );
+      setShowTestDrop(true);
+    }}
+    onFocus={() => {
+      setTestSuggestions(test ? COMMON_TESTS.filter(t => t.toLowerCase().includes(test.toLowerCase())) : COMMON_TESTS);
+      setShowTestDrop(true);
+    }}
+    onKeyDown={(e) => { if (e.key === "Enter") { setShowTestDrop(false); handleSearch(); } }}
+    onBlur={() => setTimeout(() => setShowTestDrop(false), 150)}
+  />
+  {showTestDrop && testSuggestions.length > 0 && (
+    <div style={styles.testDropdown}>
+      {testSuggestions.slice(0, 20).map((t) => (
+        <div
+          key={t}
+          style={styles.testDropItem}
+          onMouseDown={() => { setTest(t); setShowTestDrop(false); }}
+        >
+          {t}
+        </div>
+      ))}
+      {testSuggestions.length > 20 && (
+        <div style={styles.testDropMore}>+{testSuggestions.length - 20} more — keep typing</div>
+      )}
+    </div>
+  )}
+</div>
                 </div>
                 <button style={styles.searchBtn} onClick={handleSearch}>
                   {loading ? "…" : "Search"}
@@ -483,4 +540,16 @@ const styles = {
 
   linkBtn: { border: "none", background: "none", color: "#0066ff", fontSize: 14, fontWeight: 600, cursor: "pointer" },
   toast: { position: "fixed", bottom: 32, right: 32, background: "#0a0f1e", color: "#fff", padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", zIndex: 9999 },
+  testDropdown: {
+  position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100,
+  background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
+  boxShadow: "0 4px 16px rgba(0,0,0,0.1)", maxHeight: 220, overflowY: "auto",
+},
+testDropItem: {
+  padding: "8px 14px", fontSize: 13, cursor: "pointer", color: "#111",
+  borderBottom: "1px solid #f3f4f6",
+},
+testDropMore: {
+  padding: "6px 14px", fontSize: 12, color: "#9ca3af",
+},
 };
