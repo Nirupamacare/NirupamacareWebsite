@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 import './DoctorProfileSetup.css'; // Reuse styles
 
 // ─── Helpers (same as DoctorProfileSetup) ─────────────────────────────────────
@@ -37,6 +38,7 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 
 const DoctorProfileEdit = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -107,7 +109,7 @@ const DoctorProfileEdit = () => {
                 }
             } catch (err) {
                 console.error('Failed to load profile for editing', err);
-                alert('Could not load your profile. Please check your connection.');
+                showToast('Could not load your profile. Please check your connection.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -122,8 +124,8 @@ const DoctorProfileEdit = () => {
     const handleProfilePictureUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
-        if (file.size > 2 * 1024 * 1024) { alert('Image size must be less than 2MB'); return; }
+        if (!file.type.startsWith('image/')) { showToast('Please select an image file.', 'warning'); return; }
+        if (file.size > 2 * 1024 * 1024) { showToast('Image size must be less than 2MB.', 'warning'); return; }
 
         setIsUploading(true);
         const reader = new FileReader();
@@ -132,9 +134,9 @@ const DoctorProfileEdit = () => {
             try {
                 await api.updateDoctorProfilePicture(base64String);
                 setFormData(prev => ({ ...prev, profile_picture: base64String }));
-                alert('Profile picture updated!');
+                showToast('Profile picture updated successfully!', 'success');
             } catch (err) {
-                alert('Failed to upload photo: ' + (err.response?.data?.detail || err.message));
+                showToast('Failed to upload photo: ' + (err.response?.data?.detail || err.message), 'error');
             } finally {
                 setIsUploading(false);
             }
@@ -144,8 +146,8 @@ const DoctorProfileEdit = () => {
 
     // ── Location verification (same logic as DoctorProfileSetup) ───────────
     const verifyLocation = async () => {
-        if (!formData.map_link.trim()) { alert('Please paste a Google Maps link first.'); return; }
-        if (!navigator.geolocation) { alert('Geolocation is not supported by your browser.'); return; }
+        if (!formData.map_link.trim()) { showToast('Please paste a Google Maps link first.', 'warning'); return; }
+        if (!navigator.geolocation) { showToast('Geolocation is not supported by your browser.', 'warning'); return; }
 
         setLocationStatus('checking');
 
@@ -165,7 +167,7 @@ const DoctorProfileEdit = () => {
                 setFormData(prev => ({ ...prev, map_link: resolvedUrl }));
             } catch {
                 setLocationStatus('idle');
-                alert('Could not resolve the short Maps link.\n\nPlease paste the full URL from maps.google.com instead.');
+                showToast('Could not resolve the short Maps link. Please paste the full URL from maps.google.com instead.', 'error');
                 return;
             }
         } else {
@@ -174,10 +176,7 @@ const DoctorProfileEdit = () => {
 
         if (!coords) {
             setLocationStatus('idle');
-            alert(
-                'Could not extract coordinates from the link.\n\n' +
-                'Tip: Search for your clinic on maps.google.com, click it, then copy the URL from the address bar.'
-            );
+            showToast('Could not extract coordinates from the link. Tip: Search for your clinic on maps.google.com, click it, then copy the URL from the address bar.', 'warning');
             return;
         }
 
@@ -189,12 +188,12 @@ const DoctorProfileEdit = () => {
                     setLocationStatus('verified');
                 } else {
                     setLocationStatus('failed');
-                    alert(`Location mismatch! You are ${Math.round(dist)}m away from the clinic.\n\nYou must be at the clinic to verify its location.`);
+                    showToast(`Location mismatch! You are ${Math.round(dist)}m away from the clinic. You must be physically at the clinic to verify its location.`, 'warning');
                 }
             },
             (err) => {
                 setLocationStatus('idle');
-                alert('Could not get your location. Allow location access and try again.\n\nError: ' + err.message);
+                showToast('Could not get your location. Allow location access and try again. Error: ' + err.message, 'error');
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
@@ -213,11 +212,11 @@ const DoctorProfileEdit = () => {
                 languages: formData.languages.split(',').map(l => l.trim()).filter(Boolean),
             };
             await api.createDoctorProfile(payload);
-            alert('Profile updated successfully!');
+            showToast('Profile updated successfully!', 'success');
             navigate('/doctor-dashboard');
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to update profile: ' + (error.response?.data?.detail || error.message));
+            showToast('Failed to update profile: ' + (error.response?.data?.detail || error.message), 'error');
         } finally {
             setIsSubmitting(false);
         }

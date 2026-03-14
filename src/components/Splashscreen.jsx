@@ -13,7 +13,7 @@ const Splashscreen = () => {
       
       // Wait for fade out animation (0.8s) then navigate
       setTimeout(() => {
-        navigate('/language'); 
+        navigate('/home'); 
       }, 800); 
 
     }, 2500);

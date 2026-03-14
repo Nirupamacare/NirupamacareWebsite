@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, User, Users, Plus, Trash2, Save, Navigation, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api'; 
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 import './Userprofilesetup.css'; 
 
 const UserProfileSetup = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); 
   const [isEditMode, setIsEditMode] = useState(false); // To change title text
@@ -62,7 +64,7 @@ const UserProfileSetup = () => {
   const handleUseLocation = () => {
     // 1. Check if browser supports Geolocation
     if (!("geolocation" in navigator)) {
-      alert("Geolocation is not supported by your browser");
+      showToast('Geolocation is not supported by your browser.', 'warning');
       return;
     }
 
@@ -94,8 +96,8 @@ const UserProfileSetup = () => {
           setFormData(prev => ({ ...prev, city: city, pincode: pincode }));
           
         } catch (error) {
-          console.error("Geocoding error:", error);
-          alert("Could not fetch address details from coordinates.");
+          console.error('Geocoding error:', error);
+          showToast('Could not fetch address details from coordinates.', 'error');
         } finally {
           // 7. Stop Loading (Runs whether fetch succeeds or fails)
           setIsSubmitting(false);
@@ -108,16 +110,16 @@ const UserProfileSetup = () => {
         // 9. Handle specific mobile errors
         switch(error.code) {
           case error.PERMISSION_DENIED:
-            alert("Permission denied. Please enable Location Services in your browser settings.");
+            showToast('Permission denied. Please enable Location Services in your browser settings.', 'warning');
             break;
           case error.POSITION_UNAVAILABLE:
-            alert("Location unavailable. Please ensure your GPS is turned on.");
+            showToast('Location unavailable. Please ensure your GPS is turned on.', 'warning');
             break;
           case error.TIMEOUT:
-            alert("Location request timed out. Please try again in an open area.");
+            showToast('Location request timed out. Please try again in an open area.', 'warning');
             break;
           default:
-            alert("An unknown error occurred.");
+            showToast('An unknown location error occurred.', 'error');
             break;
         }
       },
@@ -149,12 +151,12 @@ const UserProfileSetup = () => {
       localStorage.setItem('profileCompleted', 'true');
       localStorage.setItem('user_name', formData.fullName.split(' ')[0]);
       
-      alert("Profile Saved Successfully!");
-      navigate('/home', { replace: true }); // Go back to View Page
+      showToast('Profile saved successfully!', 'success');
+      navigate('/home', { replace: true });
 
     } catch (error) {
-      console.error("Failed to save profile:", error);
-      alert("Failed to save profile.");
+      console.error('Failed to save profile:', error);
+      showToast('Failed to save profile. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }

@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { api } from '../api';
+import { BookingPageSkeleton } from './Skeleton';
+import { useToast } from '../context/ToastContext';
 import './AppointmentBooking.css';
 
 const AppointmentBooking = () => {
     const { doctorId } = useParams();
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const [doctor, setDoctor] = useState(null);
     const [loadingDoc, setLoadingDoc] = useState(true);
@@ -73,7 +76,7 @@ const AppointmentBooking = () => {
                     }
 
                 } else {
-                    alert("Doctor not found");
+                    showToast('Doctor not found.', 'error');
                     navigate('/doctors');
                 }
 
@@ -111,18 +114,10 @@ const AppointmentBooking = () => {
             const dateObj = new Date(selectedDate);
             const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
 
-            console.log('🔍 Slot Generation Debug:');
-            console.log('Selected Date:', selectedDate);
-            console.log('Day Name:', dayName);
-            console.log('Doctor Availabilities:', doctor.searchedAvailabilities);
-
-            // Find ALL availabilities for this day (doctor may have multiple time blocks)
+            // Find ALL availabilities for this day
             const dayAvailabilities = doctor.searchedAvailabilities?.filter(a => a.day === dayName) || [];
 
-            console.log('Found', dayAvailabilities.length, 'availability periods for', dayName, ':', dayAvailabilities);
-
             if (dayAvailabilities.length === 0) {
-                console.log('❌ No availability found for', dayName);
                 setAvailableSlots([]);
                 return;
             }
@@ -133,7 +128,6 @@ const AppointmentBooking = () => {
 
             // Generate slots for EACH availability period
             dayAvailabilities.forEach((dayAvail, periodIndex) => {
-                console.log(`Generating slots for period ${periodIndex + 1}:`, dayAvail.start_time, '-', dayAvail.end_time);
 
 
                 let current = new Date(`2000-01-01T${dayAvail.start_time}`);
@@ -192,7 +186,6 @@ const AppointmentBooking = () => {
             // Sort slots by time
             allSlots.sort((a, b) => a.time.localeCompare(b.time));
 
-            console.log('✅ Generated', allSlots.length, 'total slots across all periods:', allSlots);
             setAvailableSlots(allSlots);
             setSelectedSlot('');
         };
@@ -238,7 +231,7 @@ const AppointmentBooking = () => {
             if (result) {
                 setShowSuccess(true);
             } else {
-                alert("Booking Failed");
+                showToast('Booking Failed. Please try again.', 'error');
             }
 
         } catch (error) {
@@ -255,18 +248,18 @@ const AppointmentBooking = () => {
                 error.response?.status === 401 ||
                 error.response?.status === 403) {
                 // Authentication or role issue - redirect to login
-                alert('Login to Book Doctor');
+                showToast('Login to Book Doctor', 'error');
                 navigate('/login');
             } else {
                 // Other errors
-                alert(`Booking Failed: ${errorMsg}`);
+                showToast(`Booking Failed: ${errorMsg}`, 'error');
             }
         } finally {
             setIsBooking(false);
         }
     };
 
-    if (checkingAuth || loadingDoc) return <div className="booking-page">Loading...</div>;
+    if (checkingAuth || loadingDoc) return <BookingPageSkeleton />;
     if (!doctor) return null;
 
     // determine availabilities for rendering
@@ -392,7 +385,12 @@ const AppointmentBooking = () => {
                     <div className="success-modal">
                         <div className="success-icon">✅</div>
                         <h2>Booking Confirmed!</h2>
-                        <p>Your appointment with {doctor.name} is confirmed for {selectedDate} at {selectedSlot}.</p>
+                        <p>Your appointment with {doctor.name} is confirmed for {selectedDate} at {(() => {
+                            const [h, m] = selectedSlot.split(':');
+                            const d = new Date();
+                            d.setHours(parseInt(h), parseInt(m));
+                            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        })()}.</p>
                         <button
                             className="btn-confirm-booking"
                             style={{ marginTop: '20px' }}

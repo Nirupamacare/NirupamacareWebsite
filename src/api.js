@@ -7,10 +7,9 @@ import {
     signOut
 } from "firebase/auth";
 
-//const API_URL = "https://api-48aa.vercel.app/v1";
-//const API_URL = "http://localhost:8000/v1";
-export const BACKEND_URL = "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net";
+export const BACKEND_URL = import.meta.env.VITE_API_URL || "https://nirupamacare-api-gwfmegeffrhqb8cy.centralindia-01.azurewebsites.net";
 const API_URL = `${BACKEND_URL}/v1`;
+const ADMIN_KEY = import.meta.env.VITE_ADMIN_KEY || "";
 
 // --- Helper: Get Token robustly ---
 const getAuthToken = () => {
@@ -307,11 +306,10 @@ export const api = {
                 const token = await getAuthToken();
                 headers = { Authorization: `Bearer ${token}` };
             } catch (e) {
-                console.log("Fetching doctors without authentication (public access)");
+                // Public access — no token required
             }
 
             const response = await axios.get(url, { headers });
-            console.log(`Found ${response.data?.length || 0} doctors (page ${page})`);
             return response.data;
         } catch (error) {
             console.error("Search Doctors Error:", {
@@ -330,9 +328,8 @@ export const api = {
             try {
                 const token = await getAuthToken();
                 headers = { Authorization: `Bearer ${token}` };
-                console.log(`Fetching doctor ${id} with authentication`);
             } catch (e) {
-                console.log(`Fetching doctor ${id} without authentication (public access)`);
+                // Public access — no token required
             }
 
             const response = await axios.get(`${API_URL}/doctor/${id}`, { headers });
@@ -522,7 +519,6 @@ approveCall: async (callId, action) => {
             );
             return response.data;
         } catch (error) {
-            console.error("Record Call Event Error:", error);
             console.error("Request Verification Error:", error);
             throw error;
         }
@@ -653,7 +649,7 @@ getPatientLabBookings: async () => {
     // List all doctors with status = 'pending'
     listPendingDoctors: async () => {
         try {
-            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? 'admin123' : '';
+            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? ADMIN_KEY : '';
             const response = await axios.get(`${API_URL}/admin/doctors/pending`, {
                 headers: { 'X-Admin-Key': adminKey }
             });
@@ -667,7 +663,7 @@ getPatientLabBookings: async () => {
     // List all doctors with status = 'verified'
     listVerifiedDoctors: async () => {
         try {
-            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? 'admin123' : '';
+            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? ADMIN_KEY : '';
             const response = await axios.get(`${API_URL}/admin/doctors/verified`, {
                 headers: { 'X-Admin-Key': adminKey }
             });
@@ -681,7 +677,7 @@ getPatientLabBookings: async () => {
     // Approve or reject a doctor  action: "approve" | "reject", note: string (required for reject)
     verifyDoctor: async (doctorId, action, note = "") => {
         try {
-            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? 'admin123' : '';
+            const adminKey = sessionStorage.getItem('admin_auth') === 'true' ? ADMIN_KEY : '';
             const response = await axios.patch(
                 `${API_URL}/admin/doctors/${doctorId}/verify`,
                 { action, note },

@@ -167,7 +167,7 @@ const AdminPanel = () => {
     const handleAction = async (doctorId, action) => {
         const note = rejectNote[doctorId] || '';
         if (action === 'reject' && !note.trim()) {
-            alert('Please provide a rejection reason before confirming.');
+            setError('Please provide a rejection reason before confirming.');
             return;
         }
         setActionLoading(prev => ({ ...prev, [doctorId]: true }));
@@ -175,7 +175,7 @@ const AdminPanel = () => {
             await api.verifyDoctor(doctorId, action, note);
             setPendingDoctors(prev => prev.filter(d => d._id !== doctorId));
         } catch (e) {
-            alert(e.response?.data?.detail || 'Action failed. Please try again.');
+            setError(e.response?.data?.detail || 'Action failed. Please try again.');
         } finally {
             setActionLoading(prev => ({ ...prev, [doctorId]: false }));
         }

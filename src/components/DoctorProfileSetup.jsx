@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Stethoscope, Save, CheckSquare, XSquare, Navigation, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 import './DoctorProfileSetup.css';
 
 const DoctorProfileSetup = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   // 'idle' | 'checking' | 'verified' | 'failed'
   const [locationStatus, setLocationStatus] = useState('idle');
 
@@ -121,11 +124,11 @@ const DoctorProfileSetup = () => {
   // --- Verify Doctor is at the clinic location ---
   const verifyLocation = async () => {
     if (!formData.map_link.trim()) {
-      alert('Please paste a Google Maps link first.');
+      showToast('Please paste a Google Maps link first.', 'warning');
       return;
     }
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
+      showToast('Geolocation is not supported by your browser.', 'warning');
       return;
     }
 
@@ -150,7 +153,7 @@ const DoctorProfileSetup = () => {
         setFormData(prev => ({ ...prev, map_link: resolvedUrl }));
       } catch (err) {
         setLocationStatus('idle');
-        alert('Could not resolve the short Maps link.\n\nPlease try pasting the full URL directly from maps.google.com instead.');
+        showToast('Could not resolve the short Maps link. Please try pasting the full URL from maps.google.com instead.', 'error');
         return;
       }
     } else {
@@ -160,11 +163,7 @@ const DoctorProfileSetup = () => {
 
     if (!coords) {
       setLocationStatus('idle');
-      alert(
-        'Could not extract coordinates from the link.\n\n' +
-        'Tip: Search for your clinic on maps.google.com, click it to open its info panel, ' +
-        'then copy the URL from the address bar. It should contain /@lat,lng in it.'
-      );
+      showToast('Could not extract coordinates. Tip: Search your clinic on maps.google.com, click it, then copy the URL from the address bar.', 'warning');
       return;
     }
 
@@ -177,12 +176,12 @@ const DoctorProfileSetup = () => {
           setLocationStatus('verified');
         } else {
           setLocationStatus('failed');
-          alert(`Location mismatch! You are ${Math.round(dist)}m away from the clinic.\n\nYou must be at the clinic to register its location.`);
+          showToast(`Location mismatch! You are ${Math.round(dist)}m away from the clinic. You must be physically at the clinic to register its location.`, 'warning');
         }
       },
       (err) => {
         setLocationStatus('idle');
-        alert('Could not get your location. Please allow location access and try again.\n\nError: ' + err.message);
+        showToast('Could not get your location. Please allow location access and try again. Error: ' + err.message, 'error');
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -195,7 +194,13 @@ const DoctorProfileSetup = () => {
     try {
       // Block submission if map_link is filled but not verified
       if (formData.map_link.trim() && locationStatus !== 'verified') {
-        alert('Please verify your clinic location before saving.');
+        showToast('Please verify your clinic location before saving.', 'warning');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!agreedToPolicy) {
+        showToast('Please accept the Privacy Policy before submitting.', 'warning');
         setIsSubmitting(false);
         return;
       }
@@ -213,12 +218,12 @@ const DoctorProfileSetup = () => {
       };
 
       await api.createDoctorProfile(payload);
-      alert(isEditing ? "Profile Updated Successfully!" : "Doctor Profile Created Successfully!");
+      showToast(isEditing ? 'Profile updated successfully!' : 'Doctor profile created successfully!', 'success');
       navigate('/doctor-dashboard');
 
     } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to save profile: " + error.message);
+      console.error('Error:', error);
+      showToast('Failed to save profile: ' + error.message, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -267,8 +272,8 @@ const DoctorProfileSetup = () => {
                       if (!file) return;
 
                       // Validate file size (max 2MB)
-                      if (file.size > 2 * 1024 * 1024) {
-                        alert("Image too large. Please choose a file under 2MB.");
+                       if (file.size > 2 * 1024 * 1024) {
+                        showToast('Image too large. Please choose a file under 2MB.', 'warning');
                         e.target.value = '';
                         return;
                       }
@@ -283,7 +288,7 @@ const DoctorProfileSetup = () => {
                         setIsUploading(false);
                       };
                       reader.onerror = () => {
-                        alert("Failed to read image file.");
+                        showToast('Failed to read image file.', 'error');
                         setIsUploading(false);
                       };
                       reader.readAsDataURL(file);
@@ -500,8 +505,46 @@ const DoctorProfileSetup = () => {
               </div>
             </div>
 
+            {/* Privacy Policy Consent */}
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', gap: '10px',
+              background: '#f8f9fa', border: '1px solid #e5e7eb',
+              borderRadius: '10px', padding: '14px 16px', marginBottom: '16px'
+            }}>
+              <input
+                type="checkbox"
+                id="privacy-agree"
+                checked={agreedToPolicy}
+                onChange={(e) => setAgreedToPolicy(e.target.checked)}
+                style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: '#0f9d58', flexShrink: 0, cursor: 'pointer' }}
+              />
+              <label htmlFor="privacy-agree" style={{ fontSize: '0.9rem', color: '#374151', lineHeight: '1.5', cursor: 'pointer' }}>
+                I have read and agree to the{' '}
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: '#0f9d58', fontWeight: '600', textDecoration: 'underline' }}
+                >
+                  Terms & Conditions
+                </a>
+                {' '}and{' '}
+                <a
+                  href="/privacy-policy"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: '#0f9d58', fontWeight: '600', textDecoration: 'underline' }}
+                >
+                  Privacy Policy
+                </a>
+                {' '}of Nirupama Care. I consent to the collection and processing of my professional data.
+              </label>
+            </div>
+
             <div className="action-footer">
-              <button type="submit" className="doc-btn-primary" disabled={isSubmitting}>
+              <button type="submit" className="doc-btn-primary" disabled={isSubmitting || !agreedToPolicy}
+                style={{ opacity: (!agreedToPolicy || isSubmitting) ? 0.6 : 1 }}
+              >
                 <Save size={20} /> {isSubmitting ? "Saving..." : (isEditing ? "Update Changes" : "Create Doctor Profile")}
               </button>
             </div>

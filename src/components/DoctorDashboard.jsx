@@ -6,16 +6,19 @@ import {
 } from 'lucide-react';
 import RevenueAnalytics from './RevenueAnalytics';
 import AttachmentUploadModal from './AttachmentUploadModal';
+import { DashboardSkeleton } from './Skeleton';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import Calendar from 'react-calendar'; // Import Calendar
-import 'react-calendar/dist/Calendar.css'; // Import Calendar CSS
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import { api } from '../api';
 import { auth } from '../firebase';
+import { useToast } from '../context/ToastContext';
 import './DoctorDashboard.css';
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('appointments');
   const [loading, setLoading] = useState(true);
 
@@ -76,9 +79,8 @@ const DoctorDashboard = () => {
   const handleApplyDailySchedule = async () => {
     if (!dailyConfig.start || !dailyConfig.end) return;
 
-    // Validation: Start Time must be before End Time
     if (dailyConfig.start >= dailyConfig.end) {
-      alert("Start Time must be strictly earlier than End Time (e.g., 09:00 to 17:00).");
+      showToast('Start time must be earlier than end time.', 'warning');
       return;
     }
 
@@ -100,9 +102,9 @@ const DoctorDashboard = () => {
     try {
       await api.updateAvailability(updatedSlots);
     } catch (error) {
-      console.error("Failed to save daily schedule", error);
-      alert("Failed to save schedule");
-      setMySlots(mySlots); // Revert
+      console.error('Failed to save daily schedule', error);
+      showToast('Failed to save schedule. Please try again.', 'error');
+      setMySlots(mySlots);
       setUndoStack(null);
     }
   };
@@ -114,9 +116,9 @@ const DoctorDashboard = () => {
 
     try {
       await api.updateAvailability(undoStack);
-      setUndoStack(null); // Clear undo availability
+      setUndoStack(null);
     } catch (err) {
-      alert("Failed to undo.");
+      showToast('Failed to undo. Please try again.', 'error');
       setMySlots(currentSlots);
     }
   };
@@ -218,14 +220,26 @@ const DoctorDashboard = () => {
   }, [navigate]);
 
 
-  useEffect(()=>{
-    const callsInterval = setInterval(async () => {
-    const calls = await api.getDoctorPendingCalls();
-    setPendingCalls(calls.filter(c => c.status === 'requested'));
-  }, 10000);
-  
-  return () => clearInterval(callsInterval);
-  },[])
+  // Poll for pending calls only when authenticated
+  useEffect(() => {
+    let callsInterval = null;
+    const unsubscribePoll = onAuthStateChanged(auth, (user) => {
+      if (callsInterval) clearInterval(callsInterval);
+      if (!user) return;
+      callsInterval = setInterval(async () => {
+        try {
+          const calls = await api.getDoctorPendingCalls();
+          setPendingCalls(calls.filter(c => c.status === 'requested'));
+        } catch (err) {
+          // Silent — polling errors shouldn't disrupt the UI
+        }
+      }, 10000);
+    });
+    return () => {
+      if (callsInterval) clearInterval(callsInterval);
+      unsubscribePoll();
+    };
+  }, []);
   // --- Handlers ---
   const handleLogout = async () => {
     await api.logout();
@@ -237,17 +251,17 @@ const DoctorDashboard = () => {
     try {
       await api.requestVerification();
       setDoctorProfile(prev => ({ ...prev, verification_status: 'pending' }));
-      alert('Verification request submitted! An admin will review your profile shortly.');
+      showToast('Verification request submitted! An admin will review your profile shortly.', 'success');
     } catch (error) {
       const msg = error.response?.data?.detail || 'Failed to submit request. Please try again.';
-      alert(msg);
+      showToast(msg, 'error');
     } finally {
       setVerificationLoading(false);
     }
   };
 
   const handleDocUpload = async () => {
-    if (docFiles.length === 0) { alert('Please select files first.'); return; }
+    if (docFiles.length === 0) { showToast('Please select files first.', 'warning'); return; }
     setDocUploading(true);
     try {
       const result = await api.uploadVerificationDocs(Array.from(docFiles));
@@ -258,10 +272,10 @@ const DoctorDashboard = () => {
         verification_documents: [...(prev.verification_documents || []), ...newUrls]
       }));
       setDocFiles([]);
-      alert(`${newUrls.length} document(s) uploaded successfully!`);
+      showToast(`${newUrls.length} document(s) uploaded successfully!`, 'success');
     } catch (error) {
       const msg = error.response?.data?.detail || 'Upload failed. Please try again.';
-      alert(msg);
+      showToast(msg, 'error');
     } finally {
       setDocUploading(false);
     }
@@ -284,9 +298,9 @@ const DoctorDashboard = () => {
     try {
       await api.updateAppointmentStatus(aptId, newStatus);
     } catch (error) {
-      console.error("Update failed", error);
-      alert("Failed to update status");
-      setAppointments(previous); // Revert
+      console.error('Update failed', error);
+      showToast('Failed to update appointment status.', 'error');
+      setAppointments(previous);
     }
   };
 
@@ -311,17 +325,11 @@ const DoctorDashboard = () => {
 
       setShowUploadModal(false);
       setSelectedAppointmentForUpload(null);
-      alert('Prescription uploaded successfully!');
+      showToast('Prescription uploaded successfully!', 'success');
     } catch (error) {
-      console.error("Failed to complete appointment", error);
-      console.error("Error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-
-      const errorMessage = error.response?.data?.detail || error.message || "Unknown error occurred";
-      alert(`Failed to upload documents: ${errorMessage}\n\nPlease check the console for more details.`);
+      console.error('Failed to complete appointment', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Unknown error occurred';
+      showToast(`Failed to upload documents: ${errorMessage}`, 'error');
     } finally {
       setIsUploading(false);
     }
@@ -340,15 +348,14 @@ const DoctorDashboard = () => {
       setMySlots(updatedSlots);
 
       try {
-        // Send to backend (It expects list of objects with snake_case)
         await api.updateAvailability(updatedSlots);
-        setNewSlot({ ...newSlot, start_time: '', end_time: '' }); // Reset Form
+        setNewSlot({ ...newSlot, start_time: '', end_time: '' });
       } catch (error) {
-        alert("Failed to save slot.");
-        setMySlots(mySlots); // Revert on error
+        showToast('Failed to save slot. Please try again.', 'error');
+        setMySlots(mySlots);
       }
     } else {
-      alert("Please select start and end times");
+      showToast('Please select both start and end times.', 'warning');
     }
   };
 
@@ -361,7 +368,7 @@ const DoctorDashboard = () => {
     try {
       await api.updateAvailability(updatedSlots);
     } catch (error) {
-      alert("Failed to remove slot.");
+      showToast('Failed to remove slot.', 'error');
       setMySlots(mySlots);
     }
   };
@@ -397,17 +404,15 @@ const DoctorDashboard = () => {
 
     try {
       if (isBlocked) {
-        // Unblock
         await api.unblockDate(dateStr);
       } else {
-        // Block
         await api.blockDate(dateStr);
       }
     } catch (error) {
-      console.error("Failed to update blocked date", error);
-      const msg = error.response?.data?.detail || "Failed to update availability. backend server might be down.";
-      alert(msg);
-      setBlockedDates(prevBlocked); // Revert
+      console.error('Failed to update blocked date', error);
+      const msg = error.response?.data?.detail || 'Failed to update availability.';
+      showToast(msg, 'error');
+      setBlockedDates(prevBlocked);
     }
   };
 
@@ -424,7 +429,7 @@ const DoctorDashboard = () => {
     return null;
   };
 
-  if (loading) return <div className="loading-screen">Loading Dashboard...</div>;
+  if (loading) return <DashboardSkeleton />;
 
   return (
     <div id="dashboard-root">
@@ -710,7 +715,7 @@ const DoctorDashboard = () => {
                     </thead>
                     <tbody>
                       {appointments.map((apt) => (
-                        <tr key={apt.id || Math.random()}>
+                        <tr key={apt.id || apt._id || `apt-${apt.date}-${apt.time}`}>
                           <td className="fw-600">{apt.patient_name}</td>
                           <td>{apt.date}, {apt.time}</td>
                           <td>
@@ -1004,7 +1009,7 @@ const DoctorDashboard = () => {
                           {appointments
                             .filter(a => a.type && a.type.toLowerCase().includes('online'))
                             .map(apt => (
-                              <tr key={apt.id || Math.random()}>
+                               <tr key={apt.id || apt._id || `video-apt-${apt.date}-${apt.time}`}>
                                 <td className="fw-600">{apt.patient_name}</td>
                                 <td>{apt.time} ({apt.date})</td>
                                 <td>

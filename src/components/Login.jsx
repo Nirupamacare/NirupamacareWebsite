@@ -37,9 +37,6 @@ const AuthPage = () => {
       
       console.log("✅ Backend Sync Success:", response);
       
-      // Save the token so Home.jsx knows we are logged in
-      localStorage.setItem('token', token); 
-      
       // Save User Details
       localStorage.setItem('mongo_user_id', response.account.id);
       localStorage.setItem('user_role', response.account.role);
@@ -61,7 +58,8 @@ const AuthPage = () => {
 
     } catch (err) {
       console.error("Backend Sync Failed:", err);
-      setError("Connected to Google, but Backend failed. Check console.");
+      // Don't expose raw Firebase error messages to the user
+      setError("Login succeeded but server sync failed. Please try again.");
     }
   };
 
@@ -91,6 +89,12 @@ const AuthPage = () => {
 
     try {
       let userCredential;
+
+      if (!isLogin && formData.password.length < 8) {
+        setError('Password must be at least 8 characters.');
+        setLoading(false);
+        return;
+      }
 
       if (isLogin) {
         // Login

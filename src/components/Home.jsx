@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
-import { api } from '../api'; // ✅ 1. IMPORT API (This was missing)
+import { onAuthStateChanged } from 'firebase/auth';
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 import './Home.css';
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // --- Dropdown State ---
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -30,58 +33,47 @@ const Home = () => {
   useEffect(() => {
     setLoaded(true);
 
-    // 1. Check Login Token
-    const token = localStorage.getItem('token');
-    const storedName = localStorage.getItem('user_name');
+    // Use Firebase auth state — the single source of truth
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
 
-    if (token) {
-      setIsLoggedIn(true);
+        // Set initial display name from cached value or Firebase
+        const storedName = localStorage.getItem('user_name');
+        let finalName = 'User';
+        if (storedName) {
+          finalName = storedName;
+        } else if (user.displayName) {
+          finalName = user.displayName.split(' ')[0];
+        }
+        setUserProfile({
+          name: finalName,
+          avatar: user.photoURL || ''
+        });
 
-      // 2. Set Initial Optimistic Name (Fast, but might be "User")
-      let finalName = "User";
-      if (storedName) {
-        finalName = storedName;
-      } else if (auth.currentUser && auth.currentUser.displayName) {
-        finalName = auth.currentUser.displayName;
+        // Fetch real profile from backend
+        api.getPatientProfile()
+          .then((profile) => {
+            const realName = profile.full_name.split(' ')[0];
+            setUserProfile(prev => ({ ...prev, name: realName }));
+            localStorage.setItem('user_name', realName);
+            localStorage.setItem('profileCompleted', 'true');
+          })
+          .catch((err) => {
+            if (err.response && err.response.status === 404) {
+              navigate('/userprofilesetup');
+            }
+          });
+
+        // Check for newly confirmed appointments
+        api.getPatientAppointments()
+          .catch(() => {});
+
+      } else {
+        setIsLoggedIn(false);
+        setUserProfile({ name: 'User', avatar: '' });
       }
-
-      setUserProfile({
-        name: finalName,
-        avatar: auth.currentUser?.photoURL || ""
-      });
-
-      // ✅ 3. THE TRAFFIC COP LOGIC (Crucial Integration Step)
-      // We ask the backend: "Does this user have a profile?"
-      api.getPatientProfile()
-        .then((profile) => {
-          // SUCCESS: Profile exists! Show real name.
-          console.log("✅ Profile Verified:", profile);
-          const realName = profile.full_name.split(' ')[0];
-
-          setUserProfile(prev => ({ ...prev, name: realName }));
-          localStorage.setItem('user_name', realName);
-          localStorage.setItem('profileCompleted', 'true');
-        })
-        .catch((err) => {
-          // FAILURE: Check if it's a 404 (Missing Profile)
-          console.log("Profile check failed:", err);
-
-          if (err.response && err.response.status === 404) {
-            console.log("🚨 No profile found! Redirecting to setup...");
-            // Force user to create a profile immediately
-            navigate('/userprofilesetup');
-          }
-        });
-
-      // ✅ 4. Check for confirmed appointments
-      api.getPatientAppointments()
-        .then((appointments) => {
-          checkForNewConfirmations(appointments);
-        })
-        .catch((err) => {
-          console.log("Could not fetch appointments:", err);
-        });
-    }
+    });
 
     // Close dropdown when clicking outside
     const handleClickOutside = (event) => {
@@ -89,10 +81,13 @@ const Home = () => {
         setShowProfileMenu(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      unsubscribe();
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
 
-  }, [navigate]); // Added navigate dependency
+  }, [navigate]);
 
   // Check for newly confirmed appointments
   const checkForNewConfirmations = (appointments) => {
@@ -149,12 +144,12 @@ const Home = () => {
 
   const handleAnalyzeSymptoms = async () => {
     if (!isLoggedIn) {
-      alert("You need to login to use the AI Symptom Checker.");
+      showToast('Please login to use the AI Symptom Checker.', 'info');
       navigate('/login');
       return;
     }
     if (!symptomDesc.trim()) {
-      alert("Please describe your symptoms.");
+      showToast('Please describe your symptoms first.', 'warning');
       return;
     }
 

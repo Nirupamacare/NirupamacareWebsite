@@ -45,6 +45,9 @@ const DoctorAuth = () => {
 
       } else {
         // --- SIGN UP LOGIC ---
+        if (formData.password.length < 8) {
+          throw new Error('Password must be at least 8 characters.');
+        }
         if (formData.password !== formData.confirmPassword) {
           throw new Error("Passwords do not match");
         }

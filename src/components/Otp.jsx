@@ -111,7 +111,10 @@ const Otp = () => {
           
           <div className="otp-bottom-links">
             <span>© 2025 Nirupama Care</span>
-            <Link to="/privacy">Privacy Policy</Link>
+            <div>
+              <Link to="/terms" style={{ marginRight: '15px' }}>Terms & Conditions</Link>
+              <Link to="/privacy-policy">Privacy Policy</Link>
+            </div>
           </div>
         </div>
       </div>

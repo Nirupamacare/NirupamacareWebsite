@@ -264,9 +264,12 @@
 }
 
 @keyframes pulse-bg {
-    0%, 100% {
+
+    0%,
+    100% {
         background: #10b981;
     }
+
     50% {
         background: #059669;
     }

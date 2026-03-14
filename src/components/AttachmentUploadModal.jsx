@@ -5,6 +5,7 @@ import './AttachmentUploadModal.css';
 const AttachmentUploadModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
     const [files, setFiles] = useState([]);
     const [dragActive, setDragActive] = useState(false);
+    const [fileError, setFileError] = useState('');
 
     if (!isOpen) return null;
 
@@ -36,11 +37,16 @@ const AttachmentUploadModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
 
     const handleFiles = (fileList) => {
         const newFiles = Array.from(fileList);
+        setFileError('');
 
         newFiles.forEach(file => {
-            // Basic validation: Check size (e.g., max 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert(`${file.name} is too large. Max 5MB allowed.`);
+                setFileError(`${file.name} is too large. Max 5MB allowed.`);
+                return;
+            }
+
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+                setFileError('Only Images (JPG, PNG) and PDFs are allowed.');
                 return;
             }
 
@@ -49,15 +55,10 @@ const AttachmentUploadModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                 setFiles(prev => [...prev, {
                     name: file.name,
                     type: file.type,
-                    data: reader.result // Base64 string
+                    data: reader.result
                 }]);
             };
-
-            if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-                reader.readAsDataURL(file);
-            } else {
-                alert("Only Images (JPG, PNG) and PDFs are allowed.");
-            }
+            reader.readAsDataURL(file);
         });
     };
 
@@ -88,6 +89,12 @@ const AttachmentUploadModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                         Upload prescriptions, lab reports, or other medical documents for the patient.
                         (Images & PDF, Max 5MB)
                     </p>
+
+                    {fileError && (
+                        <p style={{ color: '#dc2626', fontSize: '0.85rem', marginBottom: '8px', padding: '8px 12px', background: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca' }}>
+                            ⚠️ {fileError}
+                        </p>
+                    )}
 
                     <div
                         className={`drop-zone ${dragActive ? "active" : ""}`}

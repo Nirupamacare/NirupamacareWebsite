@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { Video, Phone, CheckCircle, XCircle, Clock, User, AlertCircle } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 import './DoctorVideoCall.css';
 
 const DoctorVideoCall = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [incomingCalls, setIncomingCalls] = useState([]);
     const [loading, setLoading] = useState(true);
     const [processingCallId, setProcessingCallId] = useState(null);
@@ -43,7 +45,7 @@ const DoctorVideoCall = () => {
             navigate(`/doctor/video-call/${callId}`);
         } catch (err) {
             console.error('Error approving call:', err);
-            alert('Failed to approve call. Please try again.');
+            showToast('Failed to approve call. Please try again.', 'error');
             setProcessingCallId(null);
         }
     };
@@ -58,7 +60,7 @@ const DoctorVideoCall = () => {
             setProcessingCallId(null);
         } catch (err) {
             console.error('Error rejecting call:', err);
-            alert('Failed to reject call. Please try again.');
+            showToast('Failed to reject call. Please try again.', 'error');
             setProcessingCallId(null);
         }
     };
