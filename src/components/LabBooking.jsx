@@ -8,6 +8,29 @@ const STATUS_COLORS = {
   Completed: { bg: "#eff6ff", color: "#1e40af" },
 };
 
+const COMMON_TESTS = [
+  "Complete Blood Count (CBC)", "Hemoglobin (Hb)", "HbA1c",
+  "Blood Sugar Fasting", "Blood Sugar PP", "Random Blood Sugar", "OGTT",
+  "Lipid Profile", "Total Cholesterol", "LDL Cholesterol", "HDL Cholesterol", "Triglycerides",
+  "Liver Function Test (LFT)", "SGPT / ALT", "SGOT / AST", "Bilirubin Total",
+  "Alkaline Phosphatase", "GGT",
+  "Kidney Function Test (KFT)", "Serum Creatinine", "BUN", "Uric Acid", "eGFR",
+  "Thyroid Profile (T3 T4 TSH)", "TSH", "Free T3", "Free T4",
+  "Vitamin D (25-OH)", "Vitamin B12", "Iron Studies", "Serum Ferritin", "TIBC",
+  "Calcium", "Phosphorus", "Magnesium", "Electrolytes",
+  "ESR", "CRP", "RA Factor", "Anti-CCP", "ANA",
+  "Urine Routine", "Urine Culture", "Urine Microalbumin",
+  "Stool Routine", "Stool Culture", "H. Pylori Antigen",
+  "Blood Culture", "Widal Test", "Dengue NS1 Antigen", "Dengue IgG/IgM",
+  "Malaria Antigen", "COVID-19 RT-PCR",
+  "Hepatitis B (HBsAg)", "Hepatitis C (HCV)", "HIV Test", "VDRL",
+  "PSA", "CA-125", "CEA", "AFP", "Beta HCG",
+  "Prolactin", "LH", "FSH", "Testosterone", "Estradiol", "Cortisol",
+  "Insulin Fasting", "PT/INR", "APTT", "D-Dimer", "Troponin I", "CK-MB",
+  "Homocysteine", "hs-CRP", "Serum Albumin",
+  "ECG", "Echo", "X-Ray", "Ultrasound Abdomen", "Ultrasound Pelvis", "Chest X-Ray",
+];
+
 export default function BookLab() {
   const [view, setView] = useState("search"); // search | detail | book | mybookings
   const [labs, setLabs] = useState([]);
@@ -19,6 +42,9 @@ export default function BookLab() {
   // Search
   const [city, setCity] = useState("");
   const [test, setTest] = useState("");
+
+  const [testSuggestions, setTestSuggestions] = useState([]);
+  const [showTestDrop, setShowTestDrop] = useState(false);
 
   // Booking form
   const [form, setForm] = useState({ test_name: "", scheduled_date: "", scheduled_time: "", notes: "" });
@@ -108,7 +134,10 @@ export default function BookLab() {
             <div style={styles.hero}>
               <h1 style={styles.heroTitle}>Find a diagnostic lab near you</h1>
               <p style={styles.heroSub}>Search across hundreds of labs. Book tests instantly.</p>
+
+              {/* FIX: Search bar wraps on mobile into a column of stacked fields */}
               <div style={styles.searchBar}>
+                {/* City field */}
                 <div style={styles.searchField}>
                   <span style={styles.searchIcon}>📍</span>
                   <input
@@ -119,17 +148,49 @@ export default function BookLab() {
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   />
                 </div>
+
                 <div style={styles.searchDivider} />
-                <div style={styles.searchField}>
+
+                {/* FIX: Test field — single searchField div, dropdown correctly anchored to this one relative container */}
+                <div style={styles.searchFieldRelative}>
                   <span style={styles.searchIcon}>🔬</span>
                   <input
                     style={styles.searchInput}
-                    placeholder="Test name (e.g. HbA1c)"
+                    placeholder="Search test (e.g. HbA1c, CBC...)"
                     value={test}
-                    onChange={(e) => setTest(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setTest(v);
+                      setTestSuggestions(
+                        v ? COMMON_TESTS.filter(t => t.toLowerCase().includes(v.toLowerCase())) : COMMON_TESTS
+                      );
+                      setShowTestDrop(true);
+                    }}
+                    onFocus={() => {
+                      setTestSuggestions(test ? COMMON_TESTS.filter(t => t.toLowerCase().includes(test.toLowerCase())) : COMMON_TESTS);
+                      setShowTestDrop(true);
+                    }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { setShowTestDrop(false); handleSearch(); } }}
+                    onBlur={() => setTimeout(() => setShowTestDrop(false), 150)}
                   />
+                  {showTestDrop && testSuggestions.length > 0 && (
+                    <div style={styles.testDropdown}>
+                      {testSuggestions.slice(0, 20).map((t) => (
+                        <div
+                          key={t}
+                          style={styles.testDropItem}
+                          onMouseDown={() => { setTest(t); setShowTestDrop(false); }}
+                        >
+                          {t}
+                        </div>
+                      ))}
+                      {testSuggestions.length > 20 && (
+                        <div style={styles.testDropMore}>+{testSuggestions.length - 20} more — keep typing</div>
+                      )}
+                    </div>
+                  )}
                 </div>
+
                 <button style={styles.searchBtn} onClick={handleSearch}>
                   {loading ? "…" : "Search"}
                 </button>
@@ -395,18 +456,44 @@ const styles = {
   hero: { padding: "60px 0 40px", textAlign: "center" },
   heroTitle: { fontSize: 40, fontWeight: 800, color: "#0a0f1e", margin: "0 0 12px", letterSpacing: "-1px" },
   heroSub: { fontSize: 16, color: "#8892a4", margin: "0 0 32px" },
+
+  // FIX: flexWrap so fields stack on narrow screens; borderRadius adjusts on wrap via individual field styling
   searchBar: {
-    display: "flex", alignItems: "center",
-    background: "#fff", borderRadius: 50,
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    background: "#fff",
+    borderRadius: 16,
     boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
-    padding: "6px 6px 6px 20px",
-    maxWidth: 700, margin: "0 auto",
+    padding: "8px",
+    maxWidth: 700,
+    margin: "0 auto",
+    gap: 4,
   },
-  searchField: { display: "flex", alignItems: "center", gap: 8, flex: 1 },
+  searchField: {
+    display: "flex", alignItems: "center", gap: 8,
+    flex: "1 1 160px", // shrinks gracefully, wraps below ~360px
+    padding: "4px 12px",
+  },
+  // FIX: This replaces the broken nested searchField for the test input — position:relative so dropdown anchors correctly
+  searchFieldRelative: {
+    display: "flex", alignItems: "center", gap: 8,
+    flex: "1 1 160px",
+    padding: "4px 12px",
+    position: "relative",
+  },
   searchIcon: { fontSize: 16, flexShrink: 0 },
-  searchInput: { border: "none", outline: "none", fontSize: 15, color: "#0a0f1e", background: "transparent", flex: 1, padding: "8px 0" },
-  searchDivider: { width: 1, height: 28, background: "#e2e6ed", margin: "0 16px" },
-  searchBtn: { background: "#007B6C", color: "#fff", border: "none", borderRadius: 50, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" },
+  searchInput: { border: "none", outline: "none", fontSize: 15, color: "#0a0f1e", background: "transparent", flex: 1, padding: "8px 0", minWidth: 0 },
+  // FIX: hide divider when wrapped (it shows as a horizontal bar which looks wrong)
+  searchDivider: { width: 1, height: 28, background: "#e2e6ed", flexShrink: 0 },
+  searchBtn: {
+    background: "#007B6C", color: "#fff", border: "none", borderRadius: 10,
+    padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer",
+    whiteSpace: "nowrap",
+    flex: "0 0 auto",
+    // On mobile (when wrapped) take full width
+    alignSelf: "stretch",
+  },
 
   loadingRow: { display: "flex", justifyContent: "center", padding: "48px 0" },
   spinner: { width: 32, height: 32, border: "3px solid #e2e6ed", borderTop: "3px solid #0066ff", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
@@ -483,4 +570,16 @@ const styles = {
 
   linkBtn: { border: "none", background: "none", color: "#0066ff", fontSize: 14, fontWeight: 600, cursor: "pointer" },
   toast: { position: "fixed", bottom: 32, right: 32, background: "#0a0f1e", color: "#fff", padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", zIndex: 9999 },
+  testDropdown: {
+    position: "absolute", top: "100%", left: 0, right: 0, zIndex: 200,
+    background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
+    boxShadow: "0 4px 16px rgba(0,0,0,0.1)", maxHeight: 220, overflowY: "auto",
+  },
+  testDropItem: {
+    padding: "8px 14px", fontSize: 13, cursor: "pointer", color: "#111",
+    borderBottom: "1px solid #f3f4f6",
+  },
+  testDropMore: {
+    padding: "6px 14px", fontSize: 12, color: "#9ca3af",
+  },
 };
