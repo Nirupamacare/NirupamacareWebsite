@@ -159,23 +159,56 @@ const Home = () => {
     setTimeout(() => {
       const text = symptomDesc.toLowerCase();
       let doctorType = "General Physician";
-      let reason = "For a general checkup and initial diagnosis.";
+      let reason = "Based on your symptoms, a general consultation is the best starting point.";
 
-      if (text.includes('tooth') || text.includes('gum') || text.includes('jaw') || text.includes('cavity') || text.includes('oral')) {
-        doctorType = "Dentist";
-        reason = "It sounds like a dental issue.";
-      } else if (text.includes('heart') || text.includes('chest') || text.includes('beat') || text.includes('palpitation') || text.includes('breathing')) {
-        doctorType = "Cardiologist";
-        reason = "Chest or heart issues require a specialist.";
-      } else if (text.includes('skin') || text.includes('rash') || text.includes('itch') || text.includes('acne') || text.includes('spot')) {
-        doctorType = "Dermatologist";
-        reason = "For skin related conditions.";
-      } else if (text.includes('bone') || text.includes('fracture') || text.includes('joint') || text.includes('knee') || text.includes('back') || text.includes('muscle')) {
-        doctorType = "Orthopedic";
-        reason = "For bone and joint health.";
-      } else if (text.includes('stomach') || text.includes('digest') || text.includes('vomit') || text.includes('belly') || text.includes('acid') || text.includes('gas')) {
-        doctorType = "Gastroenterologist";
-        reason = "For digestive system issues.";
+      const keywordMappings = [
+        {
+          type: "Dentist",
+          keywords: ['tooth', 'teeth', 'gum', 'jaw', 'cavity', 'oral', 'mouth', 'bleed', 'braces', 'dental', 'plaque', 'enamel', 'root canal', 'wisdom', 'molar'],
+          message: "It sounds like a dental or oral health issue. Please consult a Dentist."
+        },
+        {
+          type: "Cardiologist",
+          keywords: ['heart', 'chest', 'beat', 'palpitation', 'breathing', 'shortness of breath', 'racing', 'blood pressure', 'dizzy spell', 'stroke', 'pulse', 'arrhythmia', 'tightness', 'angina'],
+          message: "Chest or heart-related symptoms require specialist attention. Please consult a Cardiologist."
+        },
+        {
+          type: "Dermatologist",
+          keywords: ['skin', 'rash', 'itch', 'acne', 'spot', 'pimple', 'eczema', 'hair loss', 'nail', 'hives', 'mole', 'dandruff', 'scab', 'blister', 'burn', 'dry', 'peeling', 'allergy'],
+          message: "These are common signs of skin, hair, or nail conditions. A Dermatologist can help."
+        },
+        {
+          type: "Orthopedic",
+          keywords: ['bone', 'fracture', 'joint', 'knee', 'back', 'muscle', 'sprain', 'arthritis', 'neck', 'shoulder', 'spine', 'limp', 'stiffness', 'hip', 'ankle', 'ligament', 'tendon', 'posture'],
+          message: "This suggests an issue with your bones, joints, or muscles. Please consult an Orthopedic specialist."
+        },
+        {
+          type: "Gastroenterologist",
+          keywords: ['stomach', 'digest', 'vomit', 'belly', 'acid', 'gas', 'diarrhea', 'constipation', 'nausea', 'heartburn', 'bloating', 'ulcer', 'bowel', 'puke', 'indigestion', 'gut', 'cramp', 'reflux'],
+          message: "Symptoms point towards digestive or gastrointestinal issues. A Gastroenterologist is recommended."
+        }
+      ];
+
+      // Find the specialization with the most keyword hits to better capture user intent
+      let bestMatch = null;
+      let maxHits = 0;
+
+      for (const mapping of keywordMappings) {
+        let hits = 0;
+        for (const keyword of mapping.keywords) {
+          if (text.includes(keyword)) {
+            hits++;
+          }
+        }
+        if (hits > maxHits) {
+          maxHits = hits;
+          bestMatch = mapping;
+        }
+      }
+
+      if (bestMatch) {
+        doctorType = bestMatch.type;
+        reason = bestMatch.message;
       }
 
       setSuggestion({ type: doctorType, message: reason });
